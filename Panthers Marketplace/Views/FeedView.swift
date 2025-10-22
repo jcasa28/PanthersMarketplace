@@ -38,16 +38,16 @@ struct FeedView: View {
                         }
                         
                         Spacer()
-                        Button {
-                            
-                        } label: {
-                            Image(systemName : "person")
-                                .foregroundStyle(Color(.white))
-                                .font(.system(size:25))
+                        
+                        NavigationLink(destination: ProfileView()) {
+                            Image(systemName: "person")
+                                .foregroundStyle(Color.white)
+                                .font(.system(size: 25))
                         }
                         
                     }
                     .padding()
+                       
                     
                     
                     HStack {
@@ -56,12 +56,16 @@ struct FeedView: View {
                         TextField("Search for items...", text: .constant(""))
                             .textFieldStyle(PlainTextFieldStyle())
                             
+                            
                     }
                     .padding(10)
                     .background(Color(.systemGray6))
                     .cornerRadius(12)
                     .padding(.horizontal)
                     .padding(.bottom)
+                    
+                    
+                    
                 }
                 .background(Color(red:7/255,green:32/255,blue:64/255))
                 .padding(.top,8)
@@ -161,9 +165,12 @@ struct FeedView: View {
                             Text("Messages")
                         }
                         Spacer()
-                        VStack{
-                            Image(systemName : "person" )
-                            Text("Profile")
+                        
+                        NavigationLink(destination : ProfileView()){
+                            VStack{
+                                Image(systemName : "person" )
+                                Text("Profile")
+                            }
                         }
                         Spacer()
                     }
@@ -187,3 +194,4 @@ struct FeedView: View {
 #Preview{
     FeedView()
 }
+
