@@ -134,6 +134,7 @@ struct FeedView: View {
                             .foregroundColor(.white)
                             .font(.system(size: 25))
                     }
+                    .offset(x : 9)
                     Spacer()
                     VStack {
                         Image(systemName: "ellipsis.message")

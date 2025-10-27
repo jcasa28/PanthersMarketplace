@@ -21,36 +21,51 @@ struct ListingCard: View {
     var body: some View {
        
         
-        Button {
-           
-        } label: {
-            VStack(spacing: 0) {
-                GeometryReader { geometry in
+        VStack(alignment : .leading){
+                VStack{
                     Image(listing.imageName)
                         .resizable()
-                        .aspectRatio(contentMode: .fill)
-                        .frame(width: geometry.size.width, height: geometry.size.height)
+                        .scaledToFill()
+                        .frame(width : 180,height : 168)
                         .clipped()
+                        .aspectRatio(contentMode : .fill)
+                        
+                        
                 }
-                .frame(height: 270 * 0.6)
+                .offset(y : -38)
                 
-                VStack(spacing: 4) {
-                    Text("$\(listing.price, specifier: "%.2f")")
-                        .font(.headline)
-                        .foregroundStyle(.black)
+                VStack(alignment : .leading){
+                    
+                    Text("$\(listing.price , specifier : "%.2f")")
+                    .foregroundColor(Color(red : 25/255, green : 40/255, blue : 60/255))
+                    .padding(.bottom ,2)
+                    .font(.system(size: 20))
+                    
+                   
+                   
                     Text(listing.title)
-                        .font(.subheadline)
-                        .foregroundStyle(.gray)
+                    .font(.system(size: 17))
                 }
-                .padding(.vertical, 8)
+                .offset(y : -30)
+                .padding(.leading)
+                
             }
-            .frame(width: 180, height: 270)
-            .background(Color.white)
+            .frame(width : 180,height : 280)
+            .background(Color(.white))
+        
             .cornerRadius(20)
-            .shadow(radius: 5)
-        }
+            .shadow(radius : 2)
+            .padding(.bottom)
+           
+          
+            
+        
+        
+       
+        
     }
 }
+
 #Preview {
     
 }
