@@ -6,24 +6,13 @@
 //
 
 import SwiftUI
-
-struct Listing: Identifiable {
-    let id = UUID()
-    let title: String
-    let price: Double
-    let category: String
-    let imageName: String
-}
+import Foundation
 
 struct ListingCard: View {
     let listing: Listing
 
     var body: some View {
        
-        
-        Button {
-           
-        } label: {
             VStack(spacing: 0) {
                 GeometryReader { geometry in
                     Image(listing.imageName)
@@ -48,7 +37,7 @@ struct ListingCard: View {
             .background(Color.white)
             .cornerRadius(20)
             .shadow(radius: 5)
-        }
+            .contentShape(Rectangle())
     }
 }
 #Preview {
