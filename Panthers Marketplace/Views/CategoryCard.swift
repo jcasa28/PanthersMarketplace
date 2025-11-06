@@ -35,26 +35,13 @@ struct CategoryCard : View{
                         Text("\(label)")
                             .foregroundStyle(.black)
                             
-                      
-                    
-                    
-                   
-                        
                 }
                
-                
-                
                 
             }
             .frame(height : 100)
             .cornerRadius(12)
-            
-            
-            
         }
-        
-
-        
         
     }
     

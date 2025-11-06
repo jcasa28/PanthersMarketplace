@@ -4,18 +4,12 @@
 //
 //  Created by Jesus Casasanta on 10/6/25.
 //
-
-
 import SwiftUI
-
-
-import SwiftUI
-
-
-
 
 
 struct FeedView: View {
+    @State private var showUploadPost = false
+    
     var columns = [
         GridItem(.flexible(), spacing: 15),
         GridItem(.flexible(), spacing: 15),
@@ -130,9 +124,13 @@ struct FeedView: View {
                         Circle()
                             .fill(Color(red:7/255, green:32/255, blue:64/255))
                             .frame(width: 50, height: 50)
-                        Image(systemName: "plus")
-                            .foregroundColor(.white)
-                            .font(.system(size: 25))
+                        Button {
+                            showUploadPost = true
+                        } label: {
+                            Image(systemName: "plus")
+                                .foregroundColor(.white)
+                                .font(.system(size: 25))
+                        }
                     }
                     Spacer()
                     VStack {
@@ -159,6 +157,9 @@ struct FeedView: View {
                 
             }
             .ignoresSafeArea(edges: .bottom)
+            .sheet(isPresented: $showUploadPost) {
+                UploadPostView()
+            }
         }
     }
 }
