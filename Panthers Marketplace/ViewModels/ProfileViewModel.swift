@@ -116,11 +116,27 @@ final class ProfileViewModel: ObservableObject {
         defer { isLoadingProfile = false }
         
         do {
-            // TODO: Implement Supabase query for user profile
-            // profiles table where id matches current user
-            await loadUserStats()
+            // Fetch current authenticated user's profile from Supabase
+            user = try await SupabaseService.shared.getCurrentUser()
+            
+            if let user = user {
+                print("✅ Loaded user profile: \(user.username)")
+                // After loading user, load their stats
+                await loadUserStats()
+            } else {
+                print("⚠️ No authenticated user found - user needs to log in")
+                errorMessage = "No user logged in. Authentication required."
+            }
         } catch {
-            errorMessage = "Failed to load profile: \(error.localizedDescription)"
+            // Only show error if it's not a session missing error
+            let errorString = "\(error)"
+            if !errorString.contains("sessionMissing") {
+                errorMessage = "Failed to load profile: \(error.localizedDescription)"
+                print("❌ Error loading user profile: \(error)")
+            } else {
+                errorMessage = "No user logged in. Authentication required."
+                print("ℹ️ No active session - user needs to authenticate")
+            }
         }
     }
     
@@ -131,15 +147,22 @@ final class ProfileViewModel: ObservableObject {
         defer { isLoadingStats = false }
         
         do {
-            // TODO: Implement Supabase queries for stats
-            // Count queries for:
-            // 1. Posts where user_id matches
-            // 2. Saved items where user_id matches
-            // 3. Messages (unique conversations) where user is sender or receiver
-            // 4. Completed transactions where user is buyer or seller
-            stats = .empty
+            // Get current user ID from the loaded user profile
+            guard let userIdString = user?.id,
+                  let userId = UUID(uuidString: userIdString) else {
+                print("⚠️ Warning: Cannot load stats without valid user ID")
+                stats = .empty
+                return
+            }
+            
+            // Fetch actual stats from Supabase
+            stats = try await SupabaseService.shared.fetchUserStats(userId: userId)
+            print("✅ Loaded user stats: \(stats.listedItemsCount) listed, \(stats.savedItemsCount) saved, \(stats.chatsCount) chats")
+            
         } catch {
             errorMessage = "Failed to load stats: \(error.localizedDescription)"
+            print("❌ Error loading user stats: \(error)")
+            stats = .empty
         }
     }
     

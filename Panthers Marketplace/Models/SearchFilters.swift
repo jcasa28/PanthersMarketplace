@@ -7,7 +7,7 @@
 
 import Foundation
 
-enum ProductCategory: String, Codable {
+enum ProductCategory: String, Codable, CaseIterable {
     case electronics = "Electronics"
     case books = "Books"
     case furniture = "Furniture"
@@ -17,9 +17,12 @@ enum ProductCategory: String, Codable {
 }
 
 enum Campus: String, Codable {
-    case modesto = "Modesto"
-    case biscayne = "Biscayne"
-    case engineering = "Engineering"
+    case engineering = "Engineering Campus"
+    case mmc = "MMC Campus"
+    case housing = "Housing"
+    case bbc = "BBC Campus"
+    case library = "Library"
+    case business = "Business Campus"
 }
 
 struct SearchFilters {

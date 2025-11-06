@@ -12,41 +12,45 @@ struct Post: Identifiable, Codable {
     let title: String
     let description: String
     let price: Double
-    let category: ProductCategory
-    let campus: Campus
-    let sellerId: UUID
-    let sellerName: String
-    let imageUrls: [String]
-    let isAvailable: Bool
+    let category: String // Changed to String to match database
+    let userId: UUID // Changed from sellerId to match database column name
+    let sellerName: String // This will come from the joined profiles table
+    let status: String
     let createdAt: Date
-    let updatedAt: Date
+    
+    // Custom coding keys to map database columns to Swift properties
+    enum CodingKeys: String, CodingKey {
+        case id
+        case title
+        case description
+        case price
+        case category
+        case userId = "user_id"
+        case sellerName = "username" // This comes from the joined profiles table
+        case status
+        case createdAt = "created_at"
+    }
     
     init(
         id: UUID = UUID(),
         title: String,
         description: String,
         price: Double,
-        category: ProductCategory,
-        campus: Campus,
-        sellerId: UUID,
+        category: String,
+        userId: UUID,
         sellerName: String,
-        imageUrls: [String] = [],
-        isAvailable: Bool = true,
-        createdAt: Date = Date(),
-        updatedAt: Date = Date()
+        status: String = "active",
+        createdAt: Date = Date()
     ) {
         self.id = id
         self.title = title
         self.description = description
         self.price = price
         self.category = category
-        self.campus = campus
-        self.sellerId = sellerId
+        self.userId = userId
         self.sellerName = sellerName
-        self.imageUrls = imageUrls
-        self.isAvailable = isAvailable
+        self.status = status
         self.createdAt = createdAt
-        self.updatedAt = updatedAt
     }
 }
 

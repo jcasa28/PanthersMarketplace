@@ -32,18 +32,21 @@ final class SearchViewModel: ObservableObject {
     // MARK: - Published Properties
     @Published private(set) var searchResults: [Post] = []
     @Published private(set) var isLoading = false
+    @Published private(set) var isLoadingMore = false
     @Published private(set) var errorMessage: String?
     @Published var searchQuery = ""
+    @Published private(set) var hasMorePages = true
     
     // MARK: - Private Properties
     private var currentFilters = SearchFilters.empty()
     private var searchHistory: [String] = []
     private var searchCancellable: AnyCancellable?
-    private var allPosts: [Post] = [] // Mock data storage
+    private var currentPage = 0
+    private let pageSize = 20
     
     init() {
         setupDebouncedSearch()
-        loadMockData()
+        loadInitialPosts()
     }
     
     // MARK: - Debounced Search Setup
@@ -52,13 +55,20 @@ final class SearchViewModel: ObservableObject {
             .debounce(for: .milliseconds(300), scheduler: RunLoop.main)
             .removeDuplicates()
             .sink { [weak self] query in
-                guard !query.isEmpty else {
-                    self?.searchResults = []
-                    return
-                }
+                guard let self = self else { return }
                 
-                Task {
-                    try? await self?.performSearch(query: query)
+                // Reset pagination when search query changes
+                self.currentPage = 0
+                self.hasMorePages = true
+                
+                if query.isEmpty {
+                    Task {
+                        await self.loadInitialPosts()
+                    }
+                } else {
+                    Task {
+                        try? await self.performSearch(query: query, reset: true)
+                    }
                 }
             }
     }
@@ -92,14 +102,23 @@ final class SearchViewModel: ObservableObject {
     // MARK: - Search Implementation
     private func applyFilters(_ filters: SearchFilters) {
         currentFilters = filters
+        currentPage = 0  // Reset pagination when filters change
+        hasMorePages = true
         Task {
-            try? await performSearch(query: searchQuery)
+            try? await performSearch(query: searchQuery, reset: true)
         }
     }
     
     @MainActor
-    private func performSearch(query: String) async throws {
-        isLoading = true
+    private func performSearch(query: String, reset: Bool = false) async throws {
+        if reset {
+            isLoading = true
+            searchResults = []
+            currentPage = 0
+        } else {
+            isLoadingMore = true
+        }
+        
         errorMessage = nil
         
         do {
@@ -111,62 +130,99 @@ final class SearchViewModel: ObservableObject {
                 }
             }
             
-            // Simulate network delay
-            try await Task.sleep(nanoseconds: 500_000_000) // 0.5 seconds
+            // Calculate offset for pagination
+            let offset = currentPage * pageSize
             
-            // Filter posts based on query and current filters
-            let filteredPosts = allPosts.filter { post in
-                matchesQuery(post: post, query: query) && matchesFilters(post: post)
+            // Perform actual database search with pagination
+            let posts: [Post]
+            if query.isEmpty && !currentFilters.hasActiveFilters() {
+                // Load recent posts with pagination
+                posts = try await SupabaseService.shared.fetchPosts(limit: pageSize, offset: offset)
+            } else {
+                // Search with query and filters with pagination
+                posts = try await SupabaseService.shared.searchPosts(query: query, filters: currentFilters, limit: pageSize, offset: offset)
             }
             
-            searchResults = filteredPosts
+            // Check if we have more pages
+            hasMorePages = posts.count == pageSize
             
-            if filteredPosts.isEmpty && !query.isEmpty {
+            // Append or replace results
+            if reset {
+                searchResults = posts
+            } else {
+                searchResults.append(contentsOf: posts)
+            }
+            
+            // Increment page for next load
+            currentPage += 1
+            
+            if searchResults.isEmpty && (!query.isEmpty || currentFilters.hasActiveFilters()) {
                 errorMessage = SearchError.noResultsFound.localizedDescription
             }
             
         } catch {
+            print("❌ Search error: \(error)")
             errorMessage = SearchError.networkError.localizedDescription
+        }
+        
+        isLoading = false
+        isLoadingMore = false
+    }
+    
+    // MARK: - Public Methods
+    func loadMoreIfNeeded(currentPost: Post) {
+        // Trigger load more when user reaches the last few items
+        guard !isLoadingMore, hasMorePages else { return }
+        
+        let thresholdIndex = searchResults.index(searchResults.endIndex, offsetBy: -5)
+        if let index = searchResults.firstIndex(where: { $0.id == currentPost.id }),
+           index >= thresholdIndex {
+            Task {
+                try? await performSearch(query: searchQuery, reset: false)
+            }
+        }
+    }
+    
+    func loadMore() {
+        guard !isLoadingMore, hasMorePages else { return }
+        Task {
+            try? await performSearch(query: searchQuery, reset: false)
+        }
+    }
+    
+    // MARK: - Database Loading
+    private func loadInitialPosts() {
+        Task {
+            await loadRecentPosts()
+        }
+    }
+    
+    @MainActor
+    private func loadRecentPosts() async {
+        isLoading = true
+        currentPage = 0
+        hasMorePages = true
+        
+        do {
+            let posts = try await SupabaseService.shared.fetchPosts(limit: pageSize, offset: 0)
+            searchResults = posts
+            hasMorePages = posts.count == pageSize
+            currentPage = 1
+        } catch {
+            print("❌ Failed to load initial posts: \(error)")
+            errorMessage = "Failed to load posts"
         }
         
         isLoading = false
     }
     
-    private func matchesQuery(post: Post, query: String) -> Bool {
-        let lowercaseQuery = query.lowercased()
-        return post.title.lowercased().contains(lowercaseQuery) ||
-               post.description.lowercased().contains(lowercaseQuery) ||
-               post.sellerName.lowercased().contains(lowercaseQuery)
-    }
-    
-    private func matchesFilters(post: Post) -> Bool {
-        // Category filter
-        if let category = currentFilters.category, post.category != category {
-            return false
-        }
-        
-        // Price filter
-        if let minPrice = currentFilters.minPrice, post.price < minPrice {
-            return false
-        }
-        
-        if let maxPrice = currentFilters.maxPrice, post.price > maxPrice {
-            return false
-        }
-        
-        // Campus filter
-        if let campus = currentFilters.campus, post.campus != campus {
-            return false
-        }
-        
-        return true
-    }
-    
     // MARK: - Public Methods
     func clearFilters() {
         currentFilters = SearchFilters.empty()
+        currentPage = 0
+        hasMorePages = true
         Task {
-            try? await performSearch(query: searchQuery)
+            try? await performSearch(query: searchQuery, reset: true)
         }
     }
     
@@ -174,6 +230,8 @@ final class SearchViewModel: ObservableObject {
         searchQuery = ""
         searchResults = []
         errorMessage = nil
+        currentPage = 0
+        hasMorePages = true
     }
     
     func getCurrentFilters() -> SearchFilters {
@@ -182,30 +240,5 @@ final class SearchViewModel: ObservableObject {
     
     func getSearchHistory() -> [String] {
         return searchHistory
-    }
-    
-    // MARK: - Mock Data
-    private func loadMockData() {
-        // This would typically load from a database or API
-        allPosts = [
-            Post(
-                title: "iPhone 14 Pro",
-                description: "Like new iPhone 14 Pro, 256GB",
-                price: 800.0,
-                category: ProductCategory.electronics,
-                campus: Campus.biscayne,
-                sellerId: UUID(),
-                sellerName: "John Doe"
-            ),
-            Post(
-                title: "Calculus Textbook",
-                description: "Used calculus textbook in good condition",
-                price: 150.0,
-                category: ProductCategory.books,
-                campus: Campus.engineering,
-                sellerId: UUID(),
-                sellerName: "Jane Smith"
-            )
-        ]
     }
 }
