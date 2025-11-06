@@ -167,5 +167,5 @@ struct FeedView: View {
 #Preview{
     
     FeedView()
-}
+}c
 
