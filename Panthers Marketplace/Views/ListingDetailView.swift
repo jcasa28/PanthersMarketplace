@@ -9,7 +9,7 @@ import SwiftUI
 
 struct ListingDetailView: View {
     let listing: Listing
-    @Environment(\.dismiss) private var dismiss
+    @SwiftUI.Environment(\.dismiss) private var dismiss
     @State private var isFavorited = false
 
     var body: some View {

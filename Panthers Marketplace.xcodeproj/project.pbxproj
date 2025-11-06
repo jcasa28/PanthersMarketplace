@@ -23,7 +23,6 @@
 		C0573D172EBBEF9D0055B634 /* PostgREST in Frameworks */ = {isa = PBXBuildFile; productRef = C0573D162EBBEF9D0055B634 /* PostgREST */; };
 		C0573D192EBBEF9D0055B634 /* Realtime in Frameworks */ = {isa = PBXBuildFile; productRef = C0573D182EBBEF9D0055B634 /* Realtime */; };
 		C0573D1B2EBBEF9D0055B634 /* Storage in Frameworks */ = {isa = PBXBuildFile; productRef = C0573D1A2EBBEF9D0055B634 /* Storage */; };
-		C0573D1F2EBBF0620055B634 /* .env in Resources */ = {isa = PBXBuildFile; fileRef = C0573D1E2EBBF0620055B634 /* .env */; };
 		C0573D212EBBF1980055B634 /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = C0573D202EBBF1980055B634 /* Supabase */; };
 /* End PBXBuildFile section */
 
@@ -59,7 +58,6 @@
 		C0573CFF2EBBEC9A0055B634 /* config.toml */ = {isa = PBXFileReference; lastKnownFileType = text; path = config.toml; sourceTree = "<group>"; };
 		C0573D002EBBEC9A0055B634 /* Environment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Environment.swift; sourceTree = "<group>"; };
 		C0573D012EBBEC9A0055B634 /* SupabaseConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupabaseConfig.swift; sourceTree = "<group>"; };
-		C0573D1E2EBBF0620055B634 /* .env */ = {isa = PBXFileReference; lastKnownFileType = text; path = .env; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -119,7 +117,6 @@
 				8B5F50102E94253900EC1D86 /* Panthers MarketplaceUITests */,
 				8B5F4FF42E94253800EC1D86 /* Products */,
 				C0573D022EBBEC9A0055B634 /* supabase */,
-				C0573D1E2EBBF0620055B634 /* .env */,
 			);
 			sourceTree = "<group>";
 		};
@@ -297,7 +294,6 @@
 				C0573D092EBBEC9A0055B634 /* cli-latest in Resources */,
 				C0573D0A2EBBEC9A0055B634 /* rest-version in Resources */,
 				C0573D0B2EBBEC9A0055B634 /* pooler-url in Resources */,
-				C0573D1F2EBBF0620055B634 /* .env in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -8,14 +8,14 @@ final class SupabaseService {
     private init() {
         let contents: String
         
-        guard let path = Bundle.main.path(forResource: ".env", ofType: nil) else {
+        guard let path = Bundle.main.path(forResource: "App.env", ofType: nil) else {
             fatalError("❌ Missing .env file in bundle")
         }
         
         do {
             contents = try String(contentsOfFile: path, encoding: .utf8)
         } catch {
-            fatalError("❌ Failed to read .env file: \(error.localizedDescription)")
+            fatalError("❌ Failed to read App.env file: \(error.localizedDescription)")
         }
         
         let url = SupabaseService.getEnvValue(from: contents, for: "SUPABASE_URL")
@@ -29,7 +29,7 @@ final class SupabaseService {
             supabaseURL: supabaseURL,
             supabaseKey: key
         )
-        print("✅ Initialized Supabase client with configuration from .env file")
+        print("✅ Initialized Supabase client with configuration from App.env file")
     }
     
     private static func getEnvValue(from contents: String, for key: String) -> String {
