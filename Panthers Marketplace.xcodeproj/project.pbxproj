@@ -12,7 +12,6 @@
 		C0573D052EBBEC9A0055B634 /* postgres-version in Resources */ = {isa = PBXBuildFile; fileRef = C0573CF92EBBEC9A0055B634 /* postgres-version */; };
 		C0573D062EBBEC9A0055B634 /* storage-version in Resources */ = {isa = PBXBuildFile; fileRef = C0573CFD2EBBEC9A0055B634 /* storage-version */; };
 		C0573D072EBBEC9A0055B634 /* project-ref in Resources */ = {isa = PBXBuildFile; fileRef = C0573CFA2EBBEC9A0055B634 /* project-ref */; };
-		C0573D082EBBEC9A0055B634 /* config.toml in Resources */ = {isa = PBXBuildFile; fileRef = C0573CFF2EBBEC9A0055B634 /* config.toml */; };
 		C0573D092EBBEC9A0055B634 /* cli-latest in Resources */ = {isa = PBXBuildFile; fileRef = C0573CF62EBBEC9A0055B634 /* cli-latest */; };
 		C0573D0A2EBBEC9A0055B634 /* rest-version in Resources */ = {isa = PBXBuildFile; fileRef = C0573CFB2EBBEC9A0055B634 /* rest-version */; };
 		C0573D0B2EBBEC9A0055B634 /* pooler-url in Resources */ = {isa = PBXBuildFile; fileRef = C0573CF82EBBEC9A0055B634 /* pooler-url */; };
@@ -24,6 +23,7 @@
 		C0573D192EBBEF9D0055B634 /* Realtime in Frameworks */ = {isa = PBXBuildFile; productRef = C0573D182EBBEF9D0055B634 /* Realtime */; };
 		C0573D1B2EBBEF9D0055B634 /* Storage in Frameworks */ = {isa = PBXBuildFile; productRef = C0573D1A2EBBEF9D0055B634 /* Storage */; };
 		C0573D212EBBF1980055B634 /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = C0573D202EBBF1980055B634 /* Supabase */; };
+		C0840A592EC425470036DBBE /* config.toml in Resources */ = {isa = PBXBuildFile; fileRef = C0840A582EC4253F0036DBBE /* config.toml */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -55,9 +55,9 @@
 		C0573CFB2EBBEC9A0055B634 /* rest-version */ = {isa = PBXFileReference; lastKnownFileType = text; path = "rest-version"; sourceTree = "<group>"; };
 		C0573CFC2EBBEC9A0055B634 /* storage-migration */ = {isa = PBXFileReference; lastKnownFileType = text; path = "storage-migration"; sourceTree = "<group>"; };
 		C0573CFD2EBBEC9A0055B634 /* storage-version */ = {isa = PBXFileReference; lastKnownFileType = text; path = "storage-version"; sourceTree = "<group>"; };
-		C0573CFF2EBBEC9A0055B634 /* config.toml */ = {isa = PBXFileReference; lastKnownFileType = text; path = config.toml; sourceTree = "<group>"; };
 		C0573D002EBBEC9A0055B634 /* Environment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Environment.swift; sourceTree = "<group>"; };
 		C0573D012EBBEC9A0055B634 /* SupabaseConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupabaseConfig.swift; sourceTree = "<group>"; };
+		C0840A582EC4253F0036DBBE /* config.toml */ = {isa = PBXFileReference; lastKnownFileType = text; path = config.toml; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -149,9 +149,9 @@
 			isa = PBXGroup;
 			children = (
 				C0573CFE2EBBEC9A0055B634 /* .temp */,
-				C0573CFF2EBBEC9A0055B634 /* config.toml */,
 				C0573D002EBBEC9A0055B634 /* Environment.swift */,
 				C0573D012EBBEC9A0055B634 /* SupabaseConfig.swift */,
+				C0840A582EC4253F0036DBBE /* config.toml */,
 			);
 			path = supabase;
 			sourceTree = "<group>";
@@ -241,7 +241,7 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
 				LastSwiftUpdateCheck = 1620;
-				LastUpgradeCheck = 1620;
+				LastUpgradeCheck = 2600;
 				TargetAttributes = {
 					8B5F4FF22E94253800EC1D86 = {
 						CreatedOnToolsVersion = 16.2;
@@ -290,9 +290,9 @@
 				C0573D052EBBEC9A0055B634 /* postgres-version in Resources */,
 				C0573D062EBBEC9A0055B634 /* storage-version in Resources */,
 				C0573D072EBBEC9A0055B634 /* project-ref in Resources */,
-				C0573D082EBBEC9A0055B634 /* config.toml in Resources */,
 				C0573D092EBBEC9A0055B634 /* cli-latest in Resources */,
 				C0573D0A2EBBEC9A0055B634 /* rest-version in Resources */,
+				C0840A592EC425470036DBBE /* config.toml in Resources */,
 				C0573D0B2EBBEC9A0055B634 /* pooler-url in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
