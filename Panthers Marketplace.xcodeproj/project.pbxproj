@@ -7,23 +7,12 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		C0573D032EBBEC9A0055B634 /* storage-migration in Resources */ = {isa = PBXBuildFile; fileRef = C0573CFC2EBBEC9A0055B634 /* storage-migration */; };
-		C0573D042EBBEC9A0055B634 /* gotrue-version in Resources */ = {isa = PBXBuildFile; fileRef = C0573CF72EBBEC9A0055B634 /* gotrue-version */; };
-		C0573D052EBBEC9A0055B634 /* postgres-version in Resources */ = {isa = PBXBuildFile; fileRef = C0573CF92EBBEC9A0055B634 /* postgres-version */; };
-		C0573D062EBBEC9A0055B634 /* storage-version in Resources */ = {isa = PBXBuildFile; fileRef = C0573CFD2EBBEC9A0055B634 /* storage-version */; };
-		C0573D072EBBEC9A0055B634 /* project-ref in Resources */ = {isa = PBXBuildFile; fileRef = C0573CFA2EBBEC9A0055B634 /* project-ref */; };
-		C0573D092EBBEC9A0055B634 /* cli-latest in Resources */ = {isa = PBXBuildFile; fileRef = C0573CF62EBBEC9A0055B634 /* cli-latest */; };
-		C0573D0A2EBBEC9A0055B634 /* rest-version in Resources */ = {isa = PBXBuildFile; fileRef = C0573CFB2EBBEC9A0055B634 /* rest-version */; };
-		C0573D0B2EBBEC9A0055B634 /* pooler-url in Resources */ = {isa = PBXBuildFile; fileRef = C0573CF82EBBEC9A0055B634 /* pooler-url */; };
-		C0573D0C2EBBEC9A0055B634 /* Environment.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0573D002EBBEC9A0055B634 /* Environment.swift */; };
-		C0573D0D2EBBEC9A0055B634 /* SupabaseConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0573D012EBBEC9A0055B634 /* SupabaseConfig.swift */; };
-		C0573D132EBBEF9D0055B634 /* Auth in Frameworks */ = {isa = PBXBuildFile; productRef = C0573D122EBBEF9D0055B634 /* Auth */; };
-		C0573D152EBBEF9D0055B634 /* Functions in Frameworks */ = {isa = PBXBuildFile; productRef = C0573D142EBBEF9D0055B634 /* Functions */; };
-		C0573D172EBBEF9D0055B634 /* PostgREST in Frameworks */ = {isa = PBXBuildFile; productRef = C0573D162EBBEF9D0055B634 /* PostgREST */; };
-		C0573D192EBBEF9D0055B634 /* Realtime in Frameworks */ = {isa = PBXBuildFile; productRef = C0573D182EBBEF9D0055B634 /* Realtime */; };
-		C0573D1B2EBBEF9D0055B634 /* Storage in Frameworks */ = {isa = PBXBuildFile; productRef = C0573D1A2EBBEF9D0055B634 /* Storage */; };
-		C0573D212EBBF1980055B634 /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = C0573D202EBBF1980055B634 /* Supabase */; };
-		C0840A592EC425470036DBBE /* config.toml in Resources */ = {isa = PBXBuildFile; fileRef = C0840A582EC4253F0036DBBE /* config.toml */; };
+		8BEF32492EC68799009D076B /* Auth in Frameworks */ = {isa = PBXBuildFile; productRef = 8BEF32482EC68799009D076B /* Auth */; };
+		8BEF324B2EC68799009D076B /* Functions in Frameworks */ = {isa = PBXBuildFile; productRef = 8BEF324A2EC68799009D076B /* Functions */; };
+		8BEF324D2EC68799009D076B /* PostgREST in Frameworks */ = {isa = PBXBuildFile; productRef = 8BEF324C2EC68799009D076B /* PostgREST */; };
+		8BEF324F2EC68799009D076B /* Realtime in Frameworks */ = {isa = PBXBuildFile; productRef = 8BEF324E2EC68799009D076B /* Realtime */; };
+		8BEF32512EC68799009D076B /* Storage in Frameworks */ = {isa = PBXBuildFile; productRef = 8BEF32502EC68799009D076B /* Storage */; };
+		8BEF32A22EC68A47009D076B /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = 8BEF32A12EC68A47009D076B /* Supabase */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -47,17 +36,6 @@
 		8B5F4FF32E94253800EC1D86 /* Panthers Marketplace.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Panthers Marketplace.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		8B5F50032E94253900EC1D86 /* Panthers MarketplaceTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Panthers MarketplaceTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		8B5F500D2E94253900EC1D86 /* Panthers MarketplaceUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Panthers MarketplaceUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
-		C0573CF62EBBEC9A0055B634 /* cli-latest */ = {isa = PBXFileReference; lastKnownFileType = text; path = "cli-latest"; sourceTree = "<group>"; };
-		C0573CF72EBBEC9A0055B634 /* gotrue-version */ = {isa = PBXFileReference; lastKnownFileType = text; path = "gotrue-version"; sourceTree = "<group>"; };
-		C0573CF82EBBEC9A0055B634 /* pooler-url */ = {isa = PBXFileReference; lastKnownFileType = text; path = "pooler-url"; sourceTree = "<group>"; };
-		C0573CF92EBBEC9A0055B634 /* postgres-version */ = {isa = PBXFileReference; lastKnownFileType = text; path = "postgres-version"; sourceTree = "<group>"; };
-		C0573CFA2EBBEC9A0055B634 /* project-ref */ = {isa = PBXFileReference; lastKnownFileType = text; path = "project-ref"; sourceTree = "<group>"; };
-		C0573CFB2EBBEC9A0055B634 /* rest-version */ = {isa = PBXFileReference; lastKnownFileType = text; path = "rest-version"; sourceTree = "<group>"; };
-		C0573CFC2EBBEC9A0055B634 /* storage-migration */ = {isa = PBXFileReference; lastKnownFileType = text; path = "storage-migration"; sourceTree = "<group>"; };
-		C0573CFD2EBBEC9A0055B634 /* storage-version */ = {isa = PBXFileReference; lastKnownFileType = text; path = "storage-version"; sourceTree = "<group>"; };
-		C0573D002EBBEC9A0055B634 /* Environment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Environment.swift; sourceTree = "<group>"; };
-		C0573D012EBBEC9A0055B634 /* SupabaseConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupabaseConfig.swift; sourceTree = "<group>"; };
-		C0840A582EC4253F0036DBBE /* config.toml */ = {isa = PBXFileReference; lastKnownFileType = text; path = config.toml; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -83,12 +61,12 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				C0573D172EBBEF9D0055B634 /* PostgREST in Frameworks */,
-				C0573D152EBBEF9D0055B634 /* Functions in Frameworks */,
-				C0573D212EBBF1980055B634 /* Supabase in Frameworks */,
-				C0573D132EBBEF9D0055B634 /* Auth in Frameworks */,
-				C0573D1B2EBBEF9D0055B634 /* Storage in Frameworks */,
-				C0573D192EBBEF9D0055B634 /* Realtime in Frameworks */,
+				8BEF324D2EC68799009D076B /* PostgREST in Frameworks */,
+				8BEF324B2EC68799009D076B /* Functions in Frameworks */,
+				8BEF32A22EC68A47009D076B /* Supabase in Frameworks */,
+				8BEF32492EC68799009D076B /* Auth in Frameworks */,
+				8BEF32512EC68799009D076B /* Storage in Frameworks */,
+				8BEF324F2EC68799009D076B /* Realtime in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -115,8 +93,8 @@
 				8B5F4FF52E94253800EC1D86 /* Panthers Marketplace */,
 				8B5F50062E94253900EC1D86 /* Panthers MarketplaceTests */,
 				8B5F50102E94253900EC1D86 /* Panthers MarketplaceUITests */,
+				8BEF32A02EC68A47009D076B /* Frameworks */,
 				8B5F4FF42E94253800EC1D86 /* Products */,
-				C0573D022EBBEC9A0055B634 /* supabase */,
 			);
 			sourceTree = "<group>";
 		};
@@ -130,30 +108,11 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
-		C0573CFE2EBBEC9A0055B634 /* .temp */ = {
+		8BEF32A02EC68A47009D076B /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				C0573CF62EBBEC9A0055B634 /* cli-latest */,
-				C0573CF72EBBEC9A0055B634 /* gotrue-version */,
-				C0573CF82EBBEC9A0055B634 /* pooler-url */,
-				C0573CF92EBBEC9A0055B634 /* postgres-version */,
-				C0573CFA2EBBEC9A0055B634 /* project-ref */,
-				C0573CFB2EBBEC9A0055B634 /* rest-version */,
-				C0573CFC2EBBEC9A0055B634 /* storage-migration */,
-				C0573CFD2EBBEC9A0055B634 /* storage-version */,
 			);
-			path = .temp;
-			sourceTree = "<group>";
-		};
-		C0573D022EBBEC9A0055B634 /* supabase */ = {
-			isa = PBXGroup;
-			children = (
-				C0573CFE2EBBEC9A0055B634 /* .temp */,
-				C0573D002EBBEC9A0055B634 /* Environment.swift */,
-				C0573D012EBBEC9A0055B634 /* SupabaseConfig.swift */,
-				C0840A582EC4253F0036DBBE /* config.toml */,
-			);
-			path = supabase;
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -176,12 +135,12 @@
 			);
 			name = "Panthers Marketplace";
 			packageProductDependencies = (
-				C0573D122EBBEF9D0055B634 /* Auth */,
-				C0573D142EBBEF9D0055B634 /* Functions */,
-				C0573D162EBBEF9D0055B634 /* PostgREST */,
-				C0573D182EBBEF9D0055B634 /* Realtime */,
-				C0573D1A2EBBEF9D0055B634 /* Storage */,
-				C0573D202EBBF1980055B634 /* Supabase */,
+				8BEF32482EC68799009D076B /* Auth */,
+				8BEF324A2EC68799009D076B /* Functions */,
+				8BEF324C2EC68799009D076B /* PostgREST */,
+				8BEF324E2EC68799009D076B /* Realtime */,
+				8BEF32502EC68799009D076B /* Storage */,
+				8BEF32A12EC68A47009D076B /* Supabase */,
 			);
 			productName = "Panthers Marketplace";
 			productReference = 8B5F4FF32E94253800EC1D86 /* Panthers Marketplace.app */;
@@ -266,7 +225,7 @@
 			mainGroup = 8B5F4FEA2E94253800EC1D86;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				C0573D112EBBEF9D0055B634 /* XCRemoteSwiftPackageReference "supabase-swift" */,
+				8BEF32472EC68799009D076B /* XCRemoteSwiftPackageReference "supabase-swift" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 8B5F4FF42E94253800EC1D86 /* Products */;
@@ -285,15 +244,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				C0573D032EBBEC9A0055B634 /* storage-migration in Resources */,
-				C0573D042EBBEC9A0055B634 /* gotrue-version in Resources */,
-				C0573D052EBBEC9A0055B634 /* postgres-version in Resources */,
-				C0573D062EBBEC9A0055B634 /* storage-version in Resources */,
-				C0573D072EBBEC9A0055B634 /* project-ref in Resources */,
-				C0573D092EBBEC9A0055B634 /* cli-latest in Resources */,
-				C0573D0A2EBBEC9A0055B634 /* rest-version in Resources */,
-				C0840A592EC425470036DBBE /* config.toml in Resources */,
-				C0573D0B2EBBEC9A0055B634 /* pooler-url in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -318,8 +268,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				C0573D0C2EBBEC9A0055B634 /* Environment.swift in Sources */,
-				C0573D0D2EBBEC9A0055B634 /* SupabaseConfig.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -388,6 +336,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = NFFJGVF36Y;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
@@ -411,6 +360,7 @@
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 			};
@@ -451,6 +401,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = NFFJGVF36Y;
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
@@ -467,6 +418,7 @@
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				VALIDATE_PRODUCT = YES;
 			};
@@ -480,7 +432,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"Panthers Marketplace/Preview Content\"";
-				DEVELOPMENT_TEAM = QRS3NJ9KF7;
+				DEVELOPMENT_TEAM = NFFJGVF36Y;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -493,7 +445,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "gabe.Panthers-Marketplace";
+				PRODUCT_BUNDLE_IDENTIFIER = "Jesus.Panthers-Marketplace";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -509,7 +461,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"Panthers Marketplace/Preview Content\"";
-				DEVELOPMENT_TEAM = QRS3NJ9KF7;
+				DEVELOPMENT_TEAM = NFFJGVF36Y;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -522,7 +474,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "gabe.Panthers-Marketplace";
+				PRODUCT_BUNDLE_IDENTIFIER = "Jesus.Panthers-Marketplace";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -536,7 +488,6 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = NFFJGVF36Y;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.2;
 				MARKETING_VERSION = 1.0;
@@ -555,7 +506,6 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = NFFJGVF36Y;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.2;
 				MARKETING_VERSION = 1.0;
@@ -573,7 +523,6 @@
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = NFFJGVF36Y;
 				GENERATE_INFOPLIST_FILE = YES;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "Jesus.Panthers-MarketplaceUITests";
@@ -590,7 +539,6 @@
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = NFFJGVF36Y;
 				GENERATE_INFOPLIST_FILE = YES;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "Jesus.Panthers-MarketplaceUITests";
@@ -644,7 +592,7 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		C0573D112EBBEF9D0055B634 /* XCRemoteSwiftPackageReference "supabase-swift" */ = {
+		8BEF32472EC68799009D076B /* XCRemoteSwiftPackageReference "supabase-swift" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/supabase-community/supabase-swift.git";
 			requirement = {
@@ -655,34 +603,34 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		C0573D122EBBEF9D0055B634 /* Auth */ = {
+		8BEF32482EC68799009D076B /* Auth */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = C0573D112EBBEF9D0055B634 /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			package = 8BEF32472EC68799009D076B /* XCRemoteSwiftPackageReference "supabase-swift" */;
 			productName = Auth;
 		};
-		C0573D142EBBEF9D0055B634 /* Functions */ = {
+		8BEF324A2EC68799009D076B /* Functions */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = C0573D112EBBEF9D0055B634 /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			package = 8BEF32472EC68799009D076B /* XCRemoteSwiftPackageReference "supabase-swift" */;
 			productName = Functions;
 		};
-		C0573D162EBBEF9D0055B634 /* PostgREST */ = {
+		8BEF324C2EC68799009D076B /* PostgREST */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = C0573D112EBBEF9D0055B634 /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			package = 8BEF32472EC68799009D076B /* XCRemoteSwiftPackageReference "supabase-swift" */;
 			productName = PostgREST;
 		};
-		C0573D182EBBEF9D0055B634 /* Realtime */ = {
+		8BEF324E2EC68799009D076B /* Realtime */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = C0573D112EBBEF9D0055B634 /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			package = 8BEF32472EC68799009D076B /* XCRemoteSwiftPackageReference "supabase-swift" */;
 			productName = Realtime;
 		};
-		C0573D1A2EBBEF9D0055B634 /* Storage */ = {
+		8BEF32502EC68799009D076B /* Storage */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = C0573D112EBBEF9D0055B634 /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			package = 8BEF32472EC68799009D076B /* XCRemoteSwiftPackageReference "supabase-swift" */;
 			productName = Storage;
 		};
-		C0573D202EBBF1980055B634 /* Supabase */ = {
+		8BEF32A12EC68A47009D076B /* Supabase */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = C0573D112EBBEF9D0055B634 /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			package = 8BEF32472EC68799009D076B /* XCRemoteSwiftPackageReference "supabase-swift" */;
 			productName = Supabase;
 		};
 /* End XCSwiftPackageProductDependency section */

@@ -47,3 +47,4 @@ final class ListingsViewModel {
         listings.insert(post, at: 0)
     }
 }
+
