@@ -5,8 +5,6 @@
 //  Created by Jesus Casasanta on 10/6/25.
 //
 
-<<<<<<< HEAD
-=======
 import SwiftUI
 
 struct FeedView: View {
@@ -371,4 +369,4 @@ struct FilterSheetView: View {
 #Preview {
     FeedView()
 }
->>>>>>> origin/gabriel
+

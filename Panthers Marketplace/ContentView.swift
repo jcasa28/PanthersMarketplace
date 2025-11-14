@@ -6,18 +6,6 @@
 //
 
 import SwiftUI
-<<<<<<< HEAD
-
-struct ContentView: View {
-    var body: some View {
-        VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Hello, world!")
-        }
-        .padding()
-=======
 import Supabase
 
 struct ContentView: View {
@@ -249,7 +237,7 @@ struct ContentView: View {
         }
         
         isLoadingTestStats = false
->>>>>>> origin/gabriel
+
     }
 }
 

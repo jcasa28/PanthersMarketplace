@@ -5,8 +5,6 @@
 //  Created by Jesus Casasanta on 10/6/25.
 //
 
-<<<<<<< HEAD
-=======
 import SwiftUI
 
 struct ProfileView: View {
@@ -14,4 +12,4 @@ struct ProfileView: View {
         Text("Profile")
     }
 }
->>>>>>> origin/gabriel
+

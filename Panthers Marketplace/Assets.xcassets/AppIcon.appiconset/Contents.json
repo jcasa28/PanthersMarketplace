@@ -1,10 +1,7 @@
 {
   "images" : [
     {
-<<<<<<< HEAD
-=======
       "filename" : "Panthers Marketplace Logo.png",
->>>>>>> origin/gabriel
       "idiom" : "universal",
       "platform" : "ios",
       "size" : "1024x1024"
@@ -16,10 +13,7 @@
           "value" : "dark"
         }
       ],
-<<<<<<< HEAD
-=======
       "filename" : "Panthers Marketplace Logo 1.png",
->>>>>>> origin/gabriel
       "idiom" : "universal",
       "platform" : "ios",
       "size" : "1024x1024"
@@ -31,10 +25,7 @@
           "value" : "tinted"
         }
       ],
-<<<<<<< HEAD
-=======
       "filename" : "Panthers Marketplace Logo 2.png",
->>>>>>> origin/gabriel
       "idiom" : "universal",
       "platform" : "ios",
       "size" : "1024x1024"

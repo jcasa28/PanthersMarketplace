@@ -1,11 +1,10 @@
-<<<<<<< HEAD
+
 //
 //  UploadPostView.swift
 //  Panthers Marketplace
 //
 //  Created by Jesus Casasanta on 10/6/25.
 //
-=======
 import SwiftUI
 import PhotosUI
 
@@ -356,5 +355,5 @@ private extension View {
 #Preview {
     UploadPostView()
 }
->>>>>>> origin/gabriel
+
 

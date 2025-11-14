@@ -5,8 +5,6 @@
 //  Created by Jesus Casasanta on 10/6/25.
 //
 
-<<<<<<< HEAD
-=======
 import Foundation
 
 struct User: Identifiable, Codable {
@@ -102,4 +100,4 @@ extension User: Hashable {
         hasher.combine(id)
     }
 }
->>>>>>> origin/gabriel
+

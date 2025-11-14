@@ -5,8 +5,8 @@
 //  Created by Jesus Casasanta on 10/6/25.
 //
 
-<<<<<<< HEAD
-=======
+
+
 import Foundation
 
 struct Post: Identifiable, Codable {
@@ -70,4 +70,4 @@ extension Post: Hashable {
     }
 }
 
->>>>>>> origin/gabriel
+
