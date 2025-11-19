@@ -3,13 +3,7 @@
 //  Panthers Marketplace
 //
 //  Created by Jesus Casasanta on 10/6/25.
-//
 
-
-//
-//  LoginView.swift
-//  Panthers Marketplace
-//
 
 import SwiftUI
 
