@@ -223,10 +223,13 @@ struct FeedView: View {
                         Text("Browse")
                     }
                     Spacer()
-                    VStack {
-                        Image(systemName: "heart")
-                        Text("Saved")
+                    NavigationLink(destination: ProfileView(initialSelectedTab: .savedItems)) {
+                        VStack {
+                            Image(systemName: "bookmark")
+                            Text("Saved")
+                        }
                     }
+                    
                     Spacer()
                     ZStack {
                         Circle()

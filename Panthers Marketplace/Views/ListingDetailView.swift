@@ -130,7 +130,7 @@ struct ListingDetailView: View {
                             isFavorited.toggle()
                         }
                     } label: {
-                        Image(systemName: isFavorited ? "heart.fill" : "heart")
+                        Image(systemName: isFavorited ? "bookmark.fill" : "bookmark")
                             .font(.system(size: 16, weight: .semibold))
                     }
                 }
