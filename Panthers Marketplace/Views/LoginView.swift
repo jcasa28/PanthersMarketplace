@@ -9,7 +9,7 @@ import SwiftUI
 
 struct LoginView: View {
     @EnvironmentObject var authVM: AuthViewModel
-    @SwiftUI.Environment(\.dismiss) private var dismiss  
+    @SwiftUI.Environment(\.dismiss) private var dismiss
 
     @State private var email: String = ""
     @State private var password: String = ""
@@ -67,7 +67,16 @@ struct LoginView: View {
                     }
                 }
                 .disabled(email.isEmpty || password.isEmpty || authVM.isLoading)
-
+                
+                NavigationLink(destination: SignUpView()) {
+                    Text("Sign Up")
+                        .fontWeight(.semibold)
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(Color(.systemGray5))
+                        .foregroundColor(.blue)
+                        .cornerRadius(12)
+                }
                 Spacer()
             }
             .padding()
