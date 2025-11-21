@@ -10,27 +10,53 @@ import Foundation
 
 struct ListingCard: View {
     let listing: Post
+    
+    // Pick an image based on the category text coming from the DB
+       private var imageNameForCategory: String? {
+           switch listing.category.lowercased() {
+           case "electronics":
+               return "listing_electronics"
+           case "books":
+               return "listing_books"
+           case "furniture":
+               return "listing_furniture"
+           case "clothing":
+               return "listing_clothing"
+           case "transportation":
+               return "listing_transportation"
+           default:
+               return "listing_other"   // or nil if you don’t have this one
+           }
+       }
 
     var body: some View {
-       
-            VStack(spacing: 0) {
-                GeometryReader { geometry in
-                    // Placeholder since Post doesn't have image property yet
-                    Rectangle()
-                        .fill(Color.gray.opacity(0.2))
-                        .frame(width: geometry.size.width, height: geometry.size.height)
-                        .overlay(
-                            VStack(spacing: 4) {
-                                Image(systemName: "photo")
-                                    .font(.title2)
-                                    .foregroundStyle(.secondary)
-                                Text(listing.category)
-                                    .font(.caption2)
-                                    .foregroundStyle(.secondary)
-                            }
-                        )
+        VStack(spacing: 0) {
+            GeometryReader { geometry in
+                ZStack {
+                    if let imageNameForCategory {
+                        Image(imageNameForCategory)
+                            .resizable()
+                            .scaledToFill()
+                            .frame(width: geometry.size.width, height: geometry.size.height)
+                            .clipped()
+                    } else {
+                        // Fallback placeholder if something goes wrong
+                        Rectangle()
+                            .fill(Color.gray.opacity(0.2))
+                            .overlay(
+                                VStack(spacing: 4) {
+                                    Image(systemName: "photo")
+                                        .font(.title2)
+                                        .foregroundStyle(.secondary)
+                                    Text(listing.category)
+                                        .font(.caption2)
+                                        .foregroundStyle(.secondary)
+                                }
+                            )
+                    }
                 }
-                .frame(height: 270 * 0.6)
+            }
+            .frame(height: 270 * 0.6)
                 
                 VStack(spacing: 4) {
                     Text("$\(listing.price, specifier: "%.2f")")

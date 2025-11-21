@@ -56,6 +56,26 @@ struct Post: Identifiable, Codable {
     }
 }
 
+extension Post {
+    var categoryImageName: String {
+        switch category.lowercased() {
+        case "electronics":
+            return "listing_electronics"
+        case "books":
+            return "listing_books"
+        case "furniture":
+            return "listing_furniture"
+        case "clothing":
+            return "listing_clothing"
+        case "transportation":
+            return "listing_transportation"
+        default:
+            return "listing_other"
+        }
+    }
+}
+
+
 // MARK: - Equatable
 extension Post: Equatable {
     static func == (lhs: Post, rhs: Post) -> Bool {

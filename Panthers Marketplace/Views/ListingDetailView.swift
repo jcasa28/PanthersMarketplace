@@ -19,20 +19,13 @@ struct ListingDetailView: View {
                 VStack(spacing: 0) {
 
                     // Placeholder for image (Post model doesn't have image property yet)
-                    Rectangle()
-                        .fill(Color.gray.opacity(0.2))
+                    Image(listing.categoryImageName)
+                        .resizable()
+                        .scaledToFill()
                         .frame(maxWidth: .infinity)
                         .frame(height: 320)
-                        .overlay(
-                            VStack(spacing: 8) {
-                                Image(systemName: "photo")
-                                    .font(.system(size: 50))
-                                    .foregroundStyle(.secondary)
-                                Text(listing.category)
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
-                            }
-                        )
+                        .clipped()
+
 
                     VStack(alignment: .leading, spacing: 10) {
                         Text(String(format: "$%.0f", listing.price))

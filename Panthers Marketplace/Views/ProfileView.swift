@@ -12,7 +12,6 @@ struct ProfileView: View {
     
     @StateObject private var searchVM = SearchViewModel()
     
-    
     enum ProfileTab: String, CaseIterable, Identifiable {
         case myListings = "My Listings"
         case savedItems = "Saved Items"
@@ -40,7 +39,7 @@ struct ProfileView: View {
                 Color(.systemGroupedBackground)
                     .ignoresSafeArea()
                 
-                ScrollView {
+                ScrollView(.vertical, showsIndicators: false) {
                     VStack(spacing: 16) {
                         profileHeader
                         statsRow
@@ -54,9 +53,22 @@ struct ProfileView: View {
             }
             .navigationTitle("Profile")
             .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button(action: {
+                        // TODO: Open ProfileSettingsView later
+                        print("Settings tapped")
+                    }) {
+                        Image(systemName: "gearshape")
+                            .font(.system(size: 20, weight: .regular))
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
         }
     }
     
+    // MARK: - Header
     
     private var profileHeader: some View {
         ZStack {
@@ -104,7 +116,7 @@ struct ProfileView: View {
                 Spacer()
                 
                 Button(action: {
-                
+                    // TODO: Edit profile action
                 }) {
                     Text("Edit Profile")
                         .font(.subheadline.weight(.semibold))
@@ -119,6 +131,8 @@ struct ProfileView: View {
         }
         .frame(maxWidth: .infinity)
     }
+    
+    // MARK: - Stats
     
     private var statsRow: some View {
         HStack(spacing: 0) {
@@ -148,6 +162,8 @@ struct ProfileView: View {
         .frame(maxWidth: .infinity)
     }
     
+    // MARK: - Tabs
+    
     private var tabPicker: some View {
         Picker("", selection: $selectedTab) {
             ForEach(ProfileTab.allCases) { tab in
@@ -158,6 +174,8 @@ struct ProfileView: View {
         .pickerStyle(.segmented)
         .padding(.horizontal, 4)
     }
+    
+    // MARK: - Listings grid
     
     private var listingsSection: some View {
         let data = selectedTab == .myListings ? myListings : savedListings
@@ -178,4 +196,5 @@ struct ProfileView: View {
         .padding(.top, 4)
     }
 }
+
 
