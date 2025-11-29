@@ -59,7 +59,6 @@ final class AuthViewModel: ObservableObject {
     }
 
     // MARK: - Public API
-
     /// Email + password sign up (with full name metadata)
     func signUp(fullName: String, email: String, password: String) async {
         guard isFIU(email) else {
