@@ -1,0 +1,639 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		8BEF32EC2EC6AD11009D076B /* Auth in Frameworks */ = {isa = PBXBuildFile; productRef = 8BEF32EB2EC6AD11009D076B /* Auth */; };
+		8BEF32EE2EC6AD11009D076B /* Functions in Frameworks */ = {isa = PBXBuildFile; productRef = 8BEF32ED2EC6AD11009D076B /* Functions */; };
+		8BEF32F02EC6AD11009D076B /* PostgREST in Frameworks */ = {isa = PBXBuildFile; productRef = 8BEF32EF2EC6AD11009D076B /* PostgREST */; };
+		8BEF32F22EC6AD11009D076B /* Realtime in Frameworks */ = {isa = PBXBuildFile; productRef = 8BEF32F12EC6AD11009D076B /* Realtime */; };
+		8BEF32F42EC6AD11009D076B /* Storage in Frameworks */ = {isa = PBXBuildFile; productRef = 8BEF32F32EC6AD11009D076B /* Storage */; };
+		8BEF32F72EC6ADCD009D076B /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = 8BEF32F62EC6ADCD009D076B /* Supabase */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		8B5F50042E94253900EC1D86 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 8B5F4FEB2E94253800EC1D86 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 8B5F4FF22E94253800EC1D86;
+			remoteInfo = "Panthers Marketplace";
+		};
+		8B5F500E2E94253900EC1D86 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 8B5F4FEB2E94253800EC1D86 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 8B5F4FF22E94253800EC1D86;
+			remoteInfo = "Panthers Marketplace";
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		8B5F4FF32E94253800EC1D86 /* Panthers Marketplace.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Panthers Marketplace.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		8B5F50032E94253900EC1D86 /* Panthers MarketplaceTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Panthers MarketplaceTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		8B5F500D2E94253900EC1D86 /* Panthers MarketplaceUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Panthers MarketplaceUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		8B5F4FF52E94253800EC1D86 /* Panthers Marketplace */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = "Panthers Marketplace";
+			sourceTree = "<group>";
+		};
+		8B5F50062E94253900EC1D86 /* Panthers MarketplaceTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = "Panthers MarketplaceTests";
+			sourceTree = "<group>";
+		};
+		8B5F50102E94253900EC1D86 /* Panthers MarketplaceUITests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = "Panthers MarketplaceUITests";
+			sourceTree = "<group>";
+		};
+/* End PBXFileSystemSynchronizedRootGroup section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		8B5F4FF02E94253800EC1D86 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				8BEF32F02EC6AD11009D076B /* PostgREST in Frameworks */,
+				8BEF32EE2EC6AD11009D076B /* Functions in Frameworks */,
+				8BEF32F72EC6ADCD009D076B /* Supabase in Frameworks */,
+				8BEF32EC2EC6AD11009D076B /* Auth in Frameworks */,
+				8BEF32F42EC6AD11009D076B /* Storage in Frameworks */,
+				8BEF32F22EC6AD11009D076B /* Realtime in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		8B5F50002E94253900EC1D86 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		8B5F500A2E94253900EC1D86 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		8B5F4FEA2E94253800EC1D86 = {
+			isa = PBXGroup;
+			children = (
+				8B5F4FF52E94253800EC1D86 /* Panthers Marketplace */,
+				8B5F50062E94253900EC1D86 /* Panthers MarketplaceTests */,
+				8B5F50102E94253900EC1D86 /* Panthers MarketplaceUITests */,
+				8BEF32F52EC6ADCD009D076B /* Frameworks */,
+				8B5F4FF42E94253800EC1D86 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		8B5F4FF42E94253800EC1D86 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				8B5F4FF32E94253800EC1D86 /* Panthers Marketplace.app */,
+				8B5F50032E94253900EC1D86 /* Panthers MarketplaceTests.xctest */,
+				8B5F500D2E94253900EC1D86 /* Panthers MarketplaceUITests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		8BEF32F52EC6ADCD009D076B /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		8B5F4FF22E94253800EC1D86 /* Panthers Marketplace */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 8B5F50172E94253900EC1D86 /* Build configuration list for PBXNativeTarget "Panthers Marketplace" */;
+			buildPhases = (
+				8B5F4FEF2E94253800EC1D86 /* Sources */,
+				8B5F4FF02E94253800EC1D86 /* Frameworks */,
+				8B5F4FF12E94253800EC1D86 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				8B5F4FF52E94253800EC1D86 /* Panthers Marketplace */,
+			);
+			name = "Panthers Marketplace";
+			packageProductDependencies = (
+				8BEF32EB2EC6AD11009D076B /* Auth */,
+				8BEF32ED2EC6AD11009D076B /* Functions */,
+				8BEF32EF2EC6AD11009D076B /* PostgREST */,
+				8BEF32F12EC6AD11009D076B /* Realtime */,
+				8BEF32F32EC6AD11009D076B /* Storage */,
+				8BEF32F62EC6ADCD009D076B /* Supabase */,
+			);
+			productName = "Panthers Marketplace";
+			productReference = 8B5F4FF32E94253800EC1D86 /* Panthers Marketplace.app */;
+			productType = "com.apple.product-type.application";
+		};
+		8B5F50022E94253900EC1D86 /* Panthers MarketplaceTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 8B5F501A2E94253900EC1D86 /* Build configuration list for PBXNativeTarget "Panthers MarketplaceTests" */;
+			buildPhases = (
+				8B5F4FFF2E94253900EC1D86 /* Sources */,
+				8B5F50002E94253900EC1D86 /* Frameworks */,
+				8B5F50012E94253900EC1D86 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				8B5F50052E94253900EC1D86 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				8B5F50062E94253900EC1D86 /* Panthers MarketplaceTests */,
+			);
+			name = "Panthers MarketplaceTests";
+			packageProductDependencies = (
+			);
+			productName = "Panthers MarketplaceTests";
+			productReference = 8B5F50032E94253900EC1D86 /* Panthers MarketplaceTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		8B5F500C2E94253900EC1D86 /* Panthers MarketplaceUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 8B5F501D2E94253900EC1D86 /* Build configuration list for PBXNativeTarget "Panthers MarketplaceUITests" */;
+			buildPhases = (
+				8B5F50092E94253900EC1D86 /* Sources */,
+				8B5F500A2E94253900EC1D86 /* Frameworks */,
+				8B5F500B2E94253900EC1D86 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				8B5F500F2E94253900EC1D86 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				8B5F50102E94253900EC1D86 /* Panthers MarketplaceUITests */,
+			);
+			name = "Panthers MarketplaceUITests";
+			packageProductDependencies = (
+			);
+			productName = "Panthers MarketplaceUITests";
+			productReference = 8B5F500D2E94253900EC1D86 /* Panthers MarketplaceUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		8B5F4FEB2E94253800EC1D86 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1620;
+				LastUpgradeCheck = 1620;
+				TargetAttributes = {
+					8B5F4FF22E94253800EC1D86 = {
+						CreatedOnToolsVersion = 16.2;
+					};
+					8B5F50022E94253900EC1D86 = {
+						CreatedOnToolsVersion = 16.2;
+						TestTargetID = 8B5F4FF22E94253800EC1D86;
+					};
+					8B5F500C2E94253900EC1D86 = {
+						CreatedOnToolsVersion = 16.2;
+						TestTargetID = 8B5F4FF22E94253800EC1D86;
+					};
+				};
+			};
+			buildConfigurationList = 8B5F4FEE2E94253800EC1D86 /* Build configuration list for PBXProject "Panthers Marketplace" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 8B5F4FEA2E94253800EC1D86;
+			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				8BEF32EA2EC6AD11009D076B /* XCRemoteSwiftPackageReference "supabase-swift" */,
+			);
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 8B5F4FF42E94253800EC1D86 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				8B5F4FF22E94253800EC1D86 /* Panthers Marketplace */,
+				8B5F50022E94253900EC1D86 /* Panthers MarketplaceTests */,
+				8B5F500C2E94253900EC1D86 /* Panthers MarketplaceUITests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		8B5F4FF12E94253800EC1D86 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		8B5F50012E94253900EC1D86 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		8B5F500B2E94253900EC1D86 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		8B5F4FEF2E94253800EC1D86 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		8B5F4FFF2E94253900EC1D86 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		8B5F50092E94253900EC1D86 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		8B5F50052E94253900EC1D86 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 8B5F4FF22E94253800EC1D86 /* Panthers Marketplace */;
+			targetProxy = 8B5F50042E94253900EC1D86 /* PBXContainerItemProxy */;
+		};
+		8B5F500F2E94253900EC1D86 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 8B5F4FF22E94253800EC1D86 /* Panthers Marketplace */;
+			targetProxy = 8B5F500E2E94253900EC1D86 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		8B5F50152E94253900EC1D86 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.2;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		8B5F50162E94253900EC1D86 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.2;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		8B5F50182E94253900EC1D86 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"Panthers Marketplace/Preview Content\"";
+				DEVELOPMENT_TEAM = NFFJGVF36Y;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "Jesus.Panthers-Marketplace";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		8B5F50192E94253900EC1D86 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"Panthers Marketplace/Preview Content\"";
+				DEVELOPMENT_TEAM = NFFJGVF36Y;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "Jesus.Panthers-Marketplace";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		8B5F501B2E94253900EC1D86 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = NFFJGVF36Y;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.2;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "Jesus.Panthers-MarketplaceTests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Panthers Marketplace.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Panthers Marketplace";
+			};
+			name = Debug;
+		};
+		8B5F501C2E94253900EC1D86 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = NFFJGVF36Y;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.2;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "Jesus.Panthers-MarketplaceTests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Panthers Marketplace.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Panthers Marketplace";
+			};
+			name = Release;
+		};
+		8B5F501E2E94253900EC1D86 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = NFFJGVF36Y;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "Jesus.Panthers-MarketplaceUITests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = "Panthers Marketplace";
+			};
+			name = Debug;
+		};
+		8B5F501F2E94253900EC1D86 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = NFFJGVF36Y;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "Jesus.Panthers-MarketplaceUITests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = "Panthers Marketplace";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		8B5F4FEE2E94253800EC1D86 /* Build configuration list for PBXProject "Panthers Marketplace" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				8B5F50152E94253900EC1D86 /* Debug */,
+				8B5F50162E94253900EC1D86 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		8B5F50172E94253900EC1D86 /* Build configuration list for PBXNativeTarget "Panthers Marketplace" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				8B5F50182E94253900EC1D86 /* Debug */,
+				8B5F50192E94253900EC1D86 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		8B5F501A2E94253900EC1D86 /* Build configuration list for PBXNativeTarget "Panthers MarketplaceTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				8B5F501B2E94253900EC1D86 /* Debug */,
+				8B5F501C2E94253900EC1D86 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		8B5F501D2E94253900EC1D86 /* Build configuration list for PBXNativeTarget "Panthers MarketplaceUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				8B5F501E2E94253900EC1D86 /* Debug */,
+				8B5F501F2E94253900EC1D86 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		8BEF32EA2EC6AD11009D076B /* XCRemoteSwiftPackageReference "supabase-swift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/supabase-community/supabase-swift.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.5.1;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		8BEF32EB2EC6AD11009D076B /* Auth */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 8BEF32EA2EC6AD11009D076B /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			productName = Auth;
+		};
+		8BEF32ED2EC6AD11009D076B /* Functions */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 8BEF32EA2EC6AD11009D076B /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			productName = Functions;
+		};
+		8BEF32EF2EC6AD11009D076B /* PostgREST */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 8BEF32EA2EC6AD11009D076B /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			productName = PostgREST;
+		};
+		8BEF32F12EC6AD11009D076B /* Realtime */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 8BEF32EA2EC6AD11009D076B /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			productName = Realtime;
+		};
+		8BEF32F32EC6AD11009D076B /* Storage */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 8BEF32EA2EC6AD11009D076B /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			productName = Storage;
+		};
+		8BEF32F62EC6ADCD009D076B /* Supabase */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 8BEF32EA2EC6AD11009D076B /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			productName = Supabase;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = 8B5F4FEB2E94253800EC1D86 /* Project object */;
+}
