@@ -10,7 +10,7 @@ import SwiftUI
 struct ProfileView: View {
     private let headerColor = Color(red: 9/255, green: 27/255, blue: 61/255)
     
-    @StateObject private var searchVM = SearchViewModel()
+    @StateObject private var profileVM = ProfileViewModel()
     
     enum ProfileTab: String, CaseIterable, Identifiable {
         case myListings = "My Listings"
@@ -24,13 +24,13 @@ struct ProfileView: View {
     init(initialSelectedTab: ProfileTab = .myListings) {
         _selectedTab = State(initialValue: initialSelectedTab)
     }
-
+    
     private var myListings: [Post] {
-        searchVM.searchResults
+        profileVM.listedItems
     }
     
     private var savedListings: [Post] {
-        searchVM.searchResults
+        profileVM.savedItems
     }
     
     var body: some View {
@@ -66,6 +66,11 @@ struct ProfileView: View {
                 }
             }
         }
+        .onAppear {
+            Task {
+                await profileVM.refreshProfile()
+            }
+        }
     }
     
     // MARK: - Header
@@ -87,27 +92,29 @@ struct ProfileView: View {
                     )
                 
                 VStack(alignment: .leading, spacing: 6) {
-                    Text("John Doe")
-                        .font(.headline)
-                        .foregroundColor(.white)
-                    
-                    HStack(spacing: 4) {
-                        Image(systemName: "mappin.and.ellipse")
-                            .font(.caption)
-                            .foregroundColor(.white.opacity(0.8))
-                        Text("MMC Campus")
-                            .font(.subheadline)
-                            .foregroundColor(.white.opacity(0.9))
+                    if let user = profileVM.user {
+                        Text(user.username)
+                            .font(.headline)
+                            .foregroundColor(.white)
+                        HStack(spacing: 4) {
+                            Image(systemName: "mappin.and.ellipse")
+                                .font(.caption)
+                                .foregroundColor(.white.opacity(0.8))
+                            if let location = user.location, !location.isEmpty {
+                                Text(location)
+                                    .font(.subheadline)
+                                    .foregroundColor(.white.opacity(0.9))
+                            }
+                        }
                     }
-                    
                     HStack(spacing: 6) {
                         Image(systemName: "star.fill")
                             .foregroundColor(.yellow)
                             .font(.subheadline)
-                        Text("4.8")
+                        Text(String(format: "%.1f", profileVM.averageRating))
                             .font(.subheadline.weight(.semibold))
                             .foregroundColor(.white)
-                        Text("(24 reviews)")
+                        Text("(") + Text("\(profileVM.ratings.count) reviews") + Text(")")
                             .font(.footnote)
                             .foregroundColor(.white.opacity(0.85))
                     }
@@ -136,11 +143,11 @@ struct ProfileView: View {
     
     private var statsRow: some View {
         HStack(spacing: 0) {
-            statItem(count: 12, label: "Listed")
+            statItem(count: profileVM.stats.listedItemsCount, label: "Listed")
             Divider().frame(height: 32)
-            statItem(count: 8, label: "Saved")
+            statItem(count: profileVM.stats.savedItemsCount, label: "Saved")
             Divider().frame(height: 32)
-            statItem(count: 5, label: "Chats")
+            statItem(count: profileVM.stats.chatsCount, label: "Chats")
         }
         .frame(maxWidth: .infinity)
         .padding()
@@ -178,15 +185,36 @@ struct ProfileView: View {
     // MARK: - Listings grid
     
     private var listingsSection: some View {
-        let data = selectedTab == .myListings ? myListings : savedListings
-        
+        let isSavedTab = selectedTab == .savedItems
+        let data = isSavedTab ? savedListings : myListings
         return VStack(alignment: .leading, spacing: 12) {
+            if !isSavedTab && data.isEmpty {
+                Text("No listings found for this user.")
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+                    .padding(.vertical, 16)
+            }
+            if isSavedTab {
+                Text("Saved Items")
+                    .font(.title2.weight(.semibold))
+                    .padding(.bottom, 4)
+                if profileVM.isLoadingSaved {
+                    ProgressView("Loading saved posts...")
+                        .padding(.vertical, 16)
+                } else if data.isEmpty {
+                    Text("No saved posts found.")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                        .padding(.vertical, 16)
+                }
+            }
             LazyVGrid(columns: [
                 GridItem(.flexible(), spacing: 16),
                 GridItem(.flexible(), spacing: 16)
             ], spacing: 16) {
                 ForEach(data) { post in
-                    NavigationLink(destination: ListingDetailView(listing: post)) {
+                    NavigationLink(destination: ListingDetailView(listing: post)
+                        .environmentObject(profileVM)) {
                         ListingCard(listing: post)
                     }
                     .buttonStyle(.plain)
@@ -196,5 +224,3 @@ struct ProfileView: View {
         .padding(.top, 4)
     }
 }
-
-

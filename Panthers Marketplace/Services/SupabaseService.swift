@@ -20,7 +20,7 @@ final class SupabaseService {
         
         let url = SupabaseService.getEnvValue(from: contents, for: "SUPABASE_URL")
         let key = SupabaseService.getEnvValue(from: contents, for: "SUPABASE_ANON_KEY")
-        
+    
         guard let supabaseURL = URL(string: url) else {
             fatalError("❌ Invalid Supabase URL in .env file")
         }
@@ -113,9 +113,9 @@ final class SupabaseService {
     }
     
     // MARK: - Posts Methods
-    func fetchPosts(limit: Int = 20, offset: Int = 0) async throws -> [Post] {
+    func fetchPosts(limit: Int = 20, offset: Int = 0, sortOption: SortOption = .newest) async throws -> [Post] {
         do {
-            print("🔄 Fetching posts from posts table (limit: \(limit), offset: \(offset))...")
+            print("🔄 Fetching posts from posts table (limit: \(limit), offset: \(offset), sort: \(sortOption.rawValue))...")
             
             // Custom struct to handle the joined data from Supabase
             struct PostWithProfile: Codable {
@@ -137,7 +137,7 @@ final class SupabaseService {
             let postsWithProfiles: [PostWithProfile] = try await client.from("posts")
                 .select("id, title, description, price, category, user_id, status, created_at, profiles:user_id(username)")
                 .eq("status", value: "active")
-                .order("created_at", ascending: false)
+                .order(sortOption.columnName, ascending: sortOption.isAscending)
                 .range(from: offset, to: offset + limit - 1)
                 .execute()
                 .value
@@ -222,17 +222,19 @@ final class SupabaseService {
                 queryBuilder = queryBuilder.lte("price", value: maxPrice)
             }
             
-            // Note: Campus filter will be applied after fetching results
-            // because Supabase doesn't support filtering on joined columns directly
+            // Apply campus filter on the post's campus_location (where item is located)
+            if let campus = filters.campus {
+                queryBuilder = queryBuilder.eq("campus_location", value: campus.databaseValue)
+            }
             
             let postsWithProfiles: [PostWithProfile] = try await queryBuilder
-                .order("created_at", ascending: false)
+                .order(filters.sortOption.columnName, ascending: filters.sortOption.isAscending)
                 .range(from: offset, to: offset + limit - 1)
                 .execute()
                 .value
             
             // Convert to Post objects, filtering out posts without valid profiles
-            var posts = postsWithProfiles.compactMap { postWithProfile -> Post? in
+            let posts = postsWithProfiles.compactMap { postWithProfile -> Post? in
                 guard let profileInfo = postWithProfile.profiles else {
                     print("⚠️ Warning: Post \(postWithProfile.id) has no associated profile, skipping")
                     return nil
@@ -251,18 +253,6 @@ final class SupabaseService {
                 )
             }
             
-            // Apply campus filter after fetching if specified
-            if let campus = filters.campus {
-                posts = posts.filter { post in
-                    // We need to check the location from the fetched profile data
-                    if let postWithProfile = postsWithProfiles.first(where: { $0.id == post.id }),
-                       let location = postWithProfile.profiles?.location {
-                        return location == campus.rawValue
-                    }
-                    return false
-                }
-            }
-            
             print("✅ Search returned \(posts.count) posts")
             return posts
             
@@ -278,7 +268,7 @@ final class SupabaseService {
         }
     }
     
-    func fetchPostsByCategory(_ category: ProductCategory) async throws -> [Post] {
+    func fetchPostsByCategory(_ category: ProductCategory, sortOption: SortOption = .newest) async throws -> [Post] {
         do {
             print("🔄 Fetching posts for category: \(category.rawValue)")
             
@@ -303,7 +293,7 @@ final class SupabaseService {
                 .select("id, title, description, price, category, user_id, status, created_at, profiles:user_id(username)")
                 .eq("status", value: "active")
                 .eq("category", value: category.rawValue)
-                .order("created_at", ascending: false)
+                .order(sortOption.columnName, ascending: sortOption.isAscending)
                 .execute()
                 .value
             
@@ -744,5 +734,345 @@ final class SupabaseService {
         // For now, this is a placeholder that can be implemented when real-time is needed
         print("📡 Real-time message subscription would be set up here for thread: \(threadId)")
         // Implementation would use Supabase Realtime channels
+    }
+    
+    // MARK: - Posts CRUD Operations
+    
+    /// Ensures a profile exists for the given user ID, creates one if missing
+    /// This is a safety check for when auth users don't have profiles yet
+    private func ensureProfileExists(userId: UUID, username: String? = nil) async throws {
+        do {
+            // Check if profile exists
+            let existingProfiles: [User] = try await client.from("profiles")
+                .select()
+                .eq("id", value: userId.uuidString)
+                .execute()
+                .value
+            
+            if !existingProfiles.isEmpty {
+                print("✅ Profile exists for user \(userId)")
+                return
+            }
+            
+            // Profile doesn't exist, create it
+            print("⚠️ Profile missing for user \(userId), creating...")
+            
+            struct ProfileInsert: Codable {
+                let id: String
+                let username: String
+                let role: String
+            }
+            
+            let profileInsert = ProfileInsert(
+                id: userId.uuidString,
+                username: username ?? "user_\(userId.uuidString.prefix(8))",
+                role: "buyer"
+            )
+            
+            try await client.from("profiles")
+                .insert(profileInsert)
+                .execute()
+            
+            print("✅ Profile created for user \(userId)")
+            
+        } catch let error as PostgrestError {
+            print("❌ Error ensuring profile exists: \(error.message)")
+            throw error
+        }
+    }
+    
+    /// Create a new post in the database
+    /// - Parameters:
+    ///   - title: Post title
+    ///   - description: Post description
+    ///   - price: Post price
+    ///   - category: Product category
+    ///   - userId: ID of the user creating the post
+    ///   - imageUrls: Optional array of image URLs from Supabase Storage
+    /// - Returns: The created Post with database-generated ID and timestamp
+    func createPost(
+        title: String,
+        description: String,
+        price: Double,
+        category: String,
+        userId: UUID,
+        campusLocation: String? = nil,
+        imageUrls: [String]? = nil
+    ) async throws -> Post {
+        do {
+            print("🔄 Creating new post: '\(title)' by user \(userId)")
+            
+            // Ensure profile exists before creating post (fixes foreign key constraint)
+            try await ensureProfileExists(userId: userId)
+            
+            // Structure to match database columns for insertion
+            struct PostInsert: Codable {
+                let title: String
+                let description: String
+                let price: Double
+                let category: String
+                let user_id: String
+                let status: String
+                let campus_location: String?
+                // Note: image_urls removed - column doesn't exist in database schema yet
+            }
+            
+            // Prepare data for insertion
+            let postInsert = PostInsert(
+                title: title,
+                description: description,
+                price: price,
+                category: category,
+                user_id: userId.uuidString,
+                status: "active",
+                campus_location: campusLocation
+            )
+            
+            // Insert into database and return with joined profile data
+            struct PostWithProfile: Codable {
+                let id: UUID
+                let title: String
+                let description: String
+                let price: Double
+                let category: String
+                let user_id: UUID
+                let status: String
+                let created_at: Date
+                let profiles: ProfileInfo?
+                
+                struct ProfileInfo: Codable {
+                    let username: String
+                }
+            }
+            
+            let response: PostWithProfile = try await client
+                .from("posts")
+                .insert(postInsert)
+                .select("id, title, description, price, category, user_id, status, created_at, profiles:user_id(username)")
+                .single()
+                .execute()
+                .value
+            
+            // Convert to Post model
+            let post = Post(
+                id: response.id,
+                title: response.title,
+                description: response.description,
+                price: response.price,
+                category: response.category,
+                userId: response.user_id,
+                sellerName: response.profiles?.username ?? "Unknown User",
+                status: response.status,
+                createdAt: response.created_at
+            )
+            
+            print("✅ Post created successfully with ID: \(post.id)")
+            return post
+            
+        } catch let error as PostgrestError {
+            print("❌ Database error creating post: \(error.message)")
+            if let hint = error.hint {
+                print("💡 Hint: \(hint)")
+            }
+            throw error
+        } catch {
+            print("❌ Unknown error creating post: \(error)")
+            throw error
+        }
+    }
+    
+    /// Update an existing post in the database
+    /// - Parameters:
+    ///   - id: Post ID to update
+    ///   - title: New title (optional - only updates if provided)
+    ///   - description: New description (optional)
+    ///   - price: New price (optional)
+    ///   - category: New category (optional)
+    ///   - campusLocation: New campus location (optional)
+    ///   - status: New status like "sold", "hidden" (optional)
+    ///   - imageUrls: New image URLs (optional)
+    /// - Returns: The updated Post object
+    func updatePost(
+        id: UUID,
+        title: String? = nil,
+        description: String? = nil,
+        price: Double? = nil,
+        category: String? = nil,
+        campusLocation: String? = nil,
+        status: String? = nil,
+        imageUrls: [String]? = nil
+    ) async throws -> Post {
+        do {
+            print("🔄 Updating post: \(id)")
+            
+            // Check that at least one field is being updated
+            let hasUpdates = title != nil || description != nil || price != nil ||
+                            category != nil || campusLocation != nil || status != nil
+            
+            guard hasUpdates else {
+                print("⚠️ No fields to update")
+                throw NSError(domain: "No fields provided for update", code: 400)
+            }
+            
+            // Create struct with optional fields for partial updates
+            struct PostUpdate: Codable {
+                let title: String?
+                let description: String?
+                let price: Double?
+                let category: String?
+                let campus_location: String?
+                let status: String?
+            }
+            
+            let updates = PostUpdate(
+                title: title,
+                description: description,
+                price: price,
+                category: category,
+                campus_location: campusLocation,
+                status: status
+            )
+            
+            print("📝 Updating post with provided fields")
+            
+            // Update in database and return with joined profile data
+            struct PostWithProfile: Codable {
+                let id: UUID
+                let title: String
+                let description: String
+                let price: Double
+                let category: String
+                let user_id: UUID
+                let status: String
+                let created_at: Date
+                let profiles: ProfileInfo?
+                
+                struct ProfileInfo: Codable {
+                    let username: String
+                }
+            }
+            
+            let response: PostWithProfile = try await client
+                .from("posts")
+                .update(updates)
+                .eq("id", value: id.uuidString)
+                .select("id, title, description, price, category, user_id, status, created_at, profiles:user_id(username)")
+                .single()
+                .execute()
+                .value
+            
+            // Convert to Post model
+            let post = Post(
+                id: response.id,
+                title: response.title,
+                description: response.description,
+                price: response.price,
+                category: response.category,
+                userId: response.user_id,
+                sellerName: response.profiles?.username ?? "Unknown User",
+                status: response.status,
+                createdAt: response.created_at
+            )
+            
+            print("✅ Post updated successfully: \(post.id)")
+            return post
+            
+        } catch let error as PostgrestError {
+            print("❌ Database error updating post: \(error.message)")
+            if let hint = error.hint {
+                print("💡 Hint: \(hint)")
+            }
+            throw error
+        } catch {
+            print("❌ Unknown error updating post: \(error)")
+            throw error
+        }
+    }
+    
+    /// Soft delete a post by marking it as hidden
+    /// Post remains in database but won't appear in searches
+    /// - Parameter id: Post ID to delete
+    /// - Note: Uses "hidden" status to match database CHECK constraint (active, hidden, sold, draft)
+    func deletePost(id: UUID) async throws {
+        do {
+            print("🔄 Soft deleting post: \(id)")
+            
+            // Use existing updatePost to change status to "hidden"
+            // This is a soft delete - post stays in database
+            // "hidden" is used because database constraint only allows: active, hidden, sold, draft
+            _ = try await updatePost(id: id, status: "hidden")
+            
+            print("✅ Post marked as hidden (soft delete)")
+            
+        } catch let error as PostgrestError {
+            print("❌ Database error deleting post: \(error.message)")
+            if let hint = error.hint {
+                print("💡 Hint: \(hint)")
+            }
+            throw error
+        } catch {
+            print("❌ Unknown error deleting post: \(error)")
+            throw error
+        }
+    }
+    
+    /// Fetch all posts for a given user (My Listings)
+    func fetchUserPosts(userId: UUID) async throws -> [Post] {
+        print("🔄 Fetching posts for user: \(userId)")
+        let posts: [Post] = try await client.from("posts")
+            .select("id, title, description, price, category, user_id, status, created_at, profiles:user_id(username)")
+            .eq("user_id", value: userId.uuidString)
+            .eq("status", value: "active")
+            .order("created_at", ascending: false)
+            .execute()
+            .value
+        print("✅ Successfully fetched \(posts.count) posts for user")
+        return posts
+    }
+    
+    /// Fetch posts saved by the user
+    func fetchSavedItems(userId: UUID) async throws -> [Post] {
+        print("🔄 Fetching saved posts for user: \(userId)")
+        // Custom struct to decode joined result
+        struct SavedPostWithProfile: Codable {
+            let posts: PostData
+            struct PostData: Codable {
+                let id: UUID
+                let title: String
+                let description: String
+                let price: Double
+                let category: String
+                let user_id: UUID
+                let status: String
+                let created_at: Date
+                let profiles: ProfileInfo?
+                struct ProfileInfo: Codable {
+                    let username: String
+                }
+            }
+        }
+        let result: [SavedPostWithProfile] = try await client.from("saved_items")
+            .select("posts:id, title, description, price, category, user_id, status, created_at, profiles:user_id(username)")
+            .eq("user_id", value: userId.uuidString)
+            .eq("posts.status", value: "active")
+            .execute()
+            .value
+        let savedPosts = result.compactMap { item -> Post? in
+            let post = item.posts
+            guard let profileInfo = post.profiles else { return nil }
+            return Post(
+                id: post.id,
+                title: post.title,
+                description: post.description,
+                price: post.price,
+                category: post.category,
+                userId: post.user_id,
+                sellerName: profileInfo.username,
+                status: post.status,
+                createdAt: post.created_at
+            )
+        }
+        print("✅ Successfully fetched \(savedPosts.count) saved posts for user")
+        return savedPosts
     }
 }

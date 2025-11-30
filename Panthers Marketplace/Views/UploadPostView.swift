@@ -9,8 +9,8 @@ import SwiftUI
 import PhotosUI
 
 struct UploadPostView: View {
-    @State var listingVM: ListingsViewModel = ListingsViewModel()
-    @State private var listingsVM = ListingsViewModel()
+    @EnvironmentObject var authVM: AuthViewModel  // Get auth from environment
+    @State private var listingsVM: ListingsViewModel  // Will be initialized with auth
     
     var onNavigateToMyListings: (() -> Void)? = nil
 
@@ -32,6 +32,12 @@ struct UploadPostView: View {
     private let maxPhotos = 6
     private let categories = ["Electronics", "Furniture", "Clothing", "Books", "Sports", "Other"]
     private let conditions = ["New", "Like New", "Good", "Fair", "For Parts"]
+    
+    // Initialize with empty ListingsViewModel, will be set up in onAppear
+    init(onNavigateToMyListings: (() -> Void)? = nil) {
+        self.onNavigateToMyListings = onNavigateToMyListings
+        _listingsVM = State(initialValue: ListingsViewModel())
+    }
 
     var body: some View {
         NavigationStack {
@@ -134,6 +140,10 @@ struct UploadPostView: View {
                 Button("OK", role: .cancel) { }
             } message: {
                 Text("Your item has been posted successfully.")
+            }
+            .onAppear {
+                // Initialize ListingsViewModel with AuthViewModel
+                listingsVM = ListingsViewModel(authVM: authVM)
             }
             .onChange(of: selectedPickerItems) { _, newItems in
                 Task { await loadPickedImages(from: newItems) }

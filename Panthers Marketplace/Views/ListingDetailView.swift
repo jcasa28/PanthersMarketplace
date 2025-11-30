@@ -10,7 +10,28 @@ import SwiftUI
 struct ListingDetailView: View {
     let listing: Post
     @SwiftUI.Environment(\.dismiss) private var dismiss
+    @EnvironmentObject var authVM: AuthViewModel
     @State private var isFavorited = false
+    
+    // ============================================================
+    // EDIT FUNCTIONALITY - UI TEAM: Replace these with your design
+    // ============================================================
+    @State private var showEditSheet = false
+    @State private var editTitle = ""
+    @State private var editDescription = ""
+    @State private var editPriceText = ""
+    @State private var editCategory = ""
+    @State private var editLocation = ""
+    @State private var isUpdating = false
+    @State private var updateError: String?
+    // ============================================================
+    
+    // ============================================================
+    // DELETE FUNCTIONALITY - UI TEAM: Replace with your design
+    // ============================================================
+    @State private var showDeleteConfirmation = false
+    @State private var isDeleting = false
+    // ============================================================
 
     var body: some View {
         ZStack(alignment: .bottom) {
@@ -107,6 +128,39 @@ struct ListingDetailView: View {
         .navigationBarTitleDisplayMode(.inline)
         .navigationBarBackButtonHidden(false)
         .toolbar {
+            // ============================================================
+            // EDIT & DELETE MENU - UI TEAM: Only shows if user owns this post
+            // Auth check: listing.userId == authVM.userId
+            // You can replace this menu with separate buttons or your own design
+            // ============================================================
+            ToolbarItem(placement: .topBarLeading) {
+                if listing.userId == authVM.userId {
+                    Menu {
+                        // Edit option
+                        Button {
+                            editTitle = listing.title
+                            editDescription = listing.description
+                            editPriceText = String(format: "%.2f", listing.price)
+                            editCategory = listing.category
+                            editLocation = ""
+                            showEditSheet = true
+                        } label: {
+                            Label("Edit", systemImage: "pencil")
+                        }
+                        
+                        // Delete option (destructive style)
+                        Button(role: .destructive) {
+                            showDeleteConfirmation = true
+                        } label: {
+                            Label("Delete", systemImage: "trash")
+                        }
+                    } label: {
+                        Image(systemName: "ellipsis.circle")
+                            .font(.system(size: 16, weight: .semibold))
+                    }
+                }
+            }
+            // ============================================================
             
             ToolbarItem(placement: .topBarTrailing) {
                 HStack(spacing: 16) {
@@ -129,7 +183,155 @@ struct ListingDetailView: View {
                 }
             }
         }
+        // ============================================================
+        // EDIT SHEET - UI TEAM: Replace this entire sheet with your design
+        // This is a simple Form-based edit UI - feel free to replace
+        // ============================================================
+        .sheet(isPresented: $showEditSheet) {
+            NavigationView {
+                Form {
+                    Section(header: Text("Edit Listing")) {
+                        TextField("Title", text: $editTitle)
+                        TextField("Price", text: $editPriceText)
+                            .keyboardType(.decimalPad)
+                        TextField("Category", text: $editCategory)
+                        TextField("Location", text: $editLocation)
+                    }
+                    
+                    Section(header: Text("Description")) {
+                        TextEditor(text: $editDescription)
+                            .frame(minHeight: 100)
+                    }
+                    
+                    if let error = updateError {
+                        Section {
+                            Text(error)
+                                .foregroundColor(.red)
+                        }
+                    }
+                }
+                .navigationTitle("Edit Post")
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItem(placement: .cancellationAction) {
+                        Button("Cancel") {
+                            showEditSheet = false
+                        }
+                    }
+                    
+                    ToolbarItem(placement: .confirmationAction) {
+                        Button("Save") {
+                            Task {
+                                await saveChanges()
+                            }
+                        }
+                        .disabled(isUpdating)
+                    }
+                }
+            }
+        }
+        // ============================================================
+        // DELETE CONFIRMATION - UI TEAM: Replace with your custom dialog
+        // This shows a confirmation before deleting
+        // ============================================================
+        .confirmationDialog(
+            "Delete this listing?",
+            isPresented: $showDeleteConfirmation,
+            titleVisibility: .visible
+        ) {
+            Button("Delete", role: .destructive) {
+                Task {
+                    await performDelete()
+                }
+            }
+            Button("Cancel", role: .cancel) { }
+        } message: {
+            Text("This listing will be removed from the marketplace. This action cannot be undone.")
+        }
+        // ============================================================
     }
+    
+    // ============================================================
+    // SAVE CHANGES - UI TEAM: This handles the actual update logic
+    // Connect your custom edit UI to this function
+    // 
+    // BACKEND NOTE FOR FRONTEND TEAM:
+    // When this function successfully updates a post:
+    // 1. Changes are saved to database ✅
+    // 2. Parent views (FeedView/ProfileView) automatically refresh when user goes back
+    // 3. The refresh happens via .onDisappear in parent views
+    // 4. You don't need to manually update any caches here
+    // 5. Just save, close sheet, and parent will handle the rest
+    // ============================================================
+    @MainActor
+    private func saveChanges() async {
+        guard !isUpdating else { return }
+        isUpdating = true
+        updateError = nil
+        
+        do {
+            // Parse price
+            guard let price = Double(editPriceText) else {
+                updateError = "Invalid price format"
+                isUpdating = false
+                return
+            }
+            
+            // Create ListingsViewModel with auth
+            let listingsVM = ListingsViewModel(authVM: authVM)
+            
+            // Call update
+            _ = try await listingsVM.updateListing(
+                postId: listing.id,
+                title: editTitle.isEmpty ? nil : editTitle,
+                description: editDescription.isEmpty ? nil : editDescription,
+                price: Decimal(price),
+                category: editCategory.isEmpty ? nil : editCategory,
+                location: editLocation.isEmpty ? nil : editLocation
+            )
+            
+            // Success - close sheet
+            showEditSheet = false
+            
+        } catch {
+            updateError = "Failed to update: \(error.localizedDescription)"
+        }
+        
+        isUpdating = false
+    }
+    // ============================================================
+    
+    // ============================================================
+    // DELETE POST - UI TEAM: Handles soft delete logic
+    // BACKEND NOTE:
+    // - Changes post status to "hidden" (soft delete)
+    // - Post stays in database but won't appear in searches
+    // - Uses "hidden" status to match database constraint
+    // - User is returned to previous screen after deletion
+    // - Only post owner can delete (checked by auth)
+    // ============================================================
+    @MainActor
+    private func performDelete() async {
+        guard !isDeleting else { return }
+        isDeleting = true
+        updateError = nil
+        
+        do {
+            // Create ListingsViewModel with auth
+            let listingsVM = ListingsViewModel(authVM: authVM)
+            
+            // Soft delete the post
+            try await listingsVM.deleteListing(postId: listing.id)
+            
+            // Success - close detail view and return to feed
+            dismiss()
+            
+        } catch {
+            updateError = "Failed to delete: \(error.localizedDescription)"
+            isDeleting = false
+        }
+    }
+    // ============================================================
     
     // MARK: - Helper Functions
     
@@ -165,8 +367,9 @@ struct ListingDetailView: View {
                 userId: UUID(),
                 sellerName: "johndoe",
                 status: "active",
-                createdAt: Date().addingTimeInterval(-7200) // 2 hours ago
+                createdAt: Date().addingTimeInterval(-7200)
             )
         )
+        .environmentObject(AuthViewModel())
     }
 }
