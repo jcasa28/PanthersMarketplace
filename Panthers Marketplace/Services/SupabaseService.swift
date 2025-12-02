@@ -1033,46 +1033,133 @@ final class SupabaseService {
     /// Fetch posts saved by the user
     func fetchSavedItems(userId: UUID) async throws -> [Post] {
         print("🔄 Fetching saved posts for user: \(userId)")
-        // Custom struct to decode joined result
-        struct SavedPostWithProfile: Codable {
-            let posts: PostData
-            struct PostData: Codable {
-                let id: UUID
-                let title: String
-                let description: String
-                let price: Double
-                let category: String
-                let user_id: UUID
-                let status: String
-                let created_at: Date
-                let profiles: ProfileInfo?
-                struct ProfileInfo: Codable {
-                    let username: String
+        
+        do {
+            // First, fetch all saved_items for this user with their related posts
+            struct SavedItemWithPost: Codable {
+                let post_id: UUID
+                let posts: PostData?
+                
+                struct PostData: Codable {
+                    let id: UUID
+                    let title: String
+                    let description: String
+                    let price: Double
+                    let category: String
+                    let user_id: UUID
+                    let status: String
+                    let created_at: Date
+                    let profiles: ProfileInfo?
+                    
+                    struct ProfileInfo: Codable {
+                        let username: String
+                    }
                 }
             }
+            
+            // Fetch saved items with joined post data
+            // Using the explicit foreign key relationship 'saved_items_post_id_fkey' to avoid ambiguity
+            let savedItemsResponse: [SavedItemWithPost] = try await client.from("saved_items")
+                .select("post_id, posts!saved_items_post_id_fkey(id, title, description, price, category, user_id, status, created_at, profiles(username))")
+                .eq("user_id", value: userId.uuidString)
+                .execute()
+                .value
+            
+            print("DEBUG: Fetched \(savedItemsResponse.count) saved_items records")
+            
+            // Convert to Post objects, filtering out items without valid posts
+            let savedPosts = savedItemsResponse.compactMap { item -> Post? in
+                guard let postData = item.posts else {
+                    print("⚠️ Saved item has no post data, skipping")
+                    return nil
+                }
+                
+                guard let profileInfo = postData.profiles else {
+                    print("⚠️ Post \(postData.id) has no profile, skipping")
+                    return nil
+                }
+                
+                return Post(
+                    id: postData.id,
+                    title: postData.title,
+                    description: postData.description,
+                    price: postData.price,
+                    category: postData.category,
+                    userId: postData.user_id,
+                    sellerName: profileInfo.username,
+                    status: postData.status,
+                    createdAt: postData.created_at
+                )
+            }
+            
+            print("✅ Successfully fetched \(savedPosts.count) saved posts for user")
+            return savedPosts
+            
+        } catch let error as PostgrestError {
+            print("❌ Database error fetching saved items: \(error.message)")
+            if let hint = error.hint {
+                print("💡 Hint: \(hint)")
+            }
+            throw error
+        } catch {
+            print("❌ Decoding error fetching saved items: \(error)")
+            throw error
         }
-        let result: [SavedPostWithProfile] = try await client.from("saved_items")
-            .select("posts:id, title, description, price, category, user_id, status, created_at, profiles:user_id(username)")
-            .eq("user_id", value: userId.uuidString)
-            .eq("posts.status", value: "active")
-            .execute()
-            .value
-        let savedPosts = result.compactMap { item -> Post? in
-            let post = item.posts
-            guard let profileInfo = post.profiles else { return nil }
-            return Post(
-                id: post.id,
-                title: post.title,
-                description: post.description,
-                price: post.price,
-                category: post.category,
-                userId: post.user_id,
-                sellerName: profileInfo.username,
-                status: post.status,
-                createdAt: post.created_at
+    }
+    
+    /// Save a post to user's saved items
+    func savePost(userId: UUID, postId: UUID) async throws {
+        print("🔄 Saving post \(postId) for user \(userId)")
+        
+        do {
+            struct SavedItemInsert: Codable {
+                let user_id: String
+                let post_id: String
+            }
+            
+            let savedItem = SavedItemInsert(
+                user_id: userId.uuidString,
+                post_id: postId.uuidString
             )
+            
+            _ = try await client.from("saved_items")
+                .insert(savedItem)
+                .execute()
+            
+            print("✅ Post saved successfully")
+        } catch let error as PostgrestError {
+            print("❌ Database error saving post: \(error.message)")
+            if let hint = error.hint {
+                print("💡 Hint: \(hint)")
+            }
+            throw error
+        } catch {
+            print("❌ Error saving post: \(error)")
+            throw error
         }
-        print("✅ Successfully fetched \(savedPosts.count) saved posts for user")
-        return savedPosts
+    }
+    
+    /// Remove a post from user's saved items
+    func unsavePost(userId: UUID, postId: UUID) async throws {
+        print("🔄 Removing saved post \(postId) for user \(userId)")
+        
+        do {
+            _ = try await client.from("saved_items")
+                .delete()
+                .eq("user_id", value: userId.uuidString)
+                .eq("post_id", value: postId.uuidString)
+                .execute()
+            
+            print("✅ Post removed from saved items")
+        } catch let error as PostgrestError {
+            print("❌ Database error unsaving post: \(error.message)")
+            if let hint = error.hint {
+                print("💡 Hint: \(hint)")
+            }
+            throw error
+        } catch {
+            print("❌ Error unsaving post: \(error)")
+            throw error
+        }
     }
 }

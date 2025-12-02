@@ -175,6 +175,22 @@ struct ListingDetailView: View {
                     Button {
                         withAnimation(.spring(response: 0.25, dampingFraction: 0.8)) {
                             isFavorited.toggle()
+                            // Save or unsave the post to/from Supabase
+                            Task {
+                                do {
+                                    if isFavorited {
+                                        // Save post to saved_items
+                                        try await SupabaseService.shared.savePost(userId: authVM.userId ?? UUID(), postId: listing.id)
+                                    } else {
+                                        // Remove post from saved_items
+                                        try await SupabaseService.shared.unsavePost(userId: authVM.userId ?? UUID(), postId: listing.id)
+                                    }
+                                } catch {
+                                    print("❌ Error saving/unsaving post: \(error)")
+                                    // Toggle back on error
+                                    isFavorited.toggle()
+                                }
+                            }
                         }
                     } label: {
                         Image(systemName: isFavorited ? "bookmark.fill" : "bookmark")
@@ -254,7 +270,7 @@ struct ListingDetailView: View {
     // ============================================================
     // SAVE CHANGES - UI TEAM: This handles the actual update logic
     // Connect your custom edit UI to this function
-    // 
+    //
     // BACKEND NOTE FOR FRONTEND TEAM:
     // When this function successfully updates a post:
     // 1. Changes are saved to database ✅
