@@ -64,8 +64,6 @@ final class ProfileViewModel: ObservableObject {
     func refreshProfile() async {
         await loadUserProfile()
         await loadUserStats()
-        await loadListings()
-        await loadSavedItems()
         await loadRatings()
     }
     
@@ -76,11 +74,18 @@ final class ProfileViewModel: ObservableObject {
         defer { isLoadingListings = false }
         
         do {
-            // TODO: Implement Supabase query for user's posts
-            // posts table where user_id matches current user
-            listedItems = []
+            guard let userIdString = user?.id,
+                  let userId = UUID(uuidString: userIdString) else {
+                print("⚠️ Warning: Cannot load listings without valid user ID (user?.id = \(String(describing: user?.id)))")
+                listedItems = []
+                return
+            }
+            print("DEBUG: Using userId for listings: \(userId.uuidString)")
+            listedItems = try await SupabaseService.shared.fetchUserPosts(userId: userId)
+            print("DEBUG: listedItems loaded: \(listedItems.count)")
         } catch {
             errorMessage = "Failed to load listings: \(error.localizedDescription)"
+            listedItems = []
         }
     }
     
@@ -91,11 +96,17 @@ final class ProfileViewModel: ObservableObject {
         defer { isLoadingSaved = false }
         
         do {
-            // TODO: Implement Supabase query for saved items
-            // Join saved_items with posts where user_id matches
-            savedItems = []
+            guard let userIdString = user?.id, let userId = UUID(uuidString: userIdString) else {
+                print("⚠️ Warning: Cannot load saved items without valid user ID (user?.id = \(String(describing: user?.id)))")
+                savedItems = []
+                return
+            }
+            print("DEBUG: Using userId for saved items: \(userId.uuidString)")
+            savedItems = try await SupabaseService.shared.fetchSavedItems(userId: userId)
+            print("DEBUG: savedItems loaded: \(savedItems.count)")
         } catch {
             errorMessage = "Failed to load saved items: \(error.localizedDescription)"
+            savedItems = []
         }
     }
     
@@ -129,8 +140,10 @@ final class ProfileViewModel: ObservableObject {
             
             if let user = user {
                 print("✅ Loaded user profile: \(user.username)")
-                // After loading user, load their stats
+                // After loading user, load their stats and listings
                 await loadUserStats()
+                await loadListings()
+                await loadSavedItems()
             } else {
                 print("⚠️ No authenticated user found - user needs to log in")
                 errorMessage = "No user logged in. Authentication required."

@@ -61,7 +61,7 @@ struct ListingCard: View {
         .frame(width: 180, height: 280)
         .background(Color(.white))
         .cornerRadius(20)
-        .shadow(radius: 2)
+        .shadow(radius: 6)
         .padding(.bottom)
     }
 }

@@ -6,22 +6,24 @@
 import SwiftUI
 
 struct ChatListView: View {
-    @StateObject private var chatVM = ChatViewModel()
+    @EnvironmentObject var chatVM: ChatViewModel
     @State private var selectedThread: ThreadWithDetails?
+    @State private var showNewConversation = false
+    @StateObject private var searchVM = SearchViewModel()
     
     var body: some View {
         NavigationView {
             VStack {
-                if chatVM.testUserId == nil {
-                    // No test user selected
+                if !chatVM.isAuthenticated {
+                    // User not logged in
                     VStack(spacing: 20) {
-                        Image(systemName: "message.badge.circle")
+                        Image(systemName: "person.crop.circle.badge.xmark")
                             .font(.system(size: 60))
                             .foregroundColor(.gray)
-                        Text("No User Selected")
+                        Text("Not Logged In")
                             .font(.title2)
                             .fontWeight(.semibold)
-                        Text("Go to ContentView and select a user to view their chats")
+                        Text("Please log in to view and send messages")
                             .font(.subheadline)
                             .foregroundColor(.gray)
                             .multilineTextAlignment(.center)
@@ -66,8 +68,17 @@ struct ChatListView: View {
             }
             .navigationTitle("💬 Chats")
             .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    if chatVM.isAuthenticated {
+                        Button(action: {
+                            showNewConversation = true
+                        }) {
+                            Image(systemName: "square.and.pencil")
+                        }
+                    }
+                }
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    if chatVM.testUserId != nil {
+                    if chatVM.isAuthenticated {
                         Button(action: {
                             Task {
                                 await chatVM.loadThreads()
@@ -77,6 +88,9 @@ struct ChatListView: View {
                         }
                     }
                 }
+            }
+            .sheet(isPresented: $showNewConversation) {
+                NewConversationSheet(chatVM: chatVM, searchVM: searchVM)
             }
             .onAppear {
                 chatVM.startThreadPolling()
@@ -138,7 +152,7 @@ struct ChatDetailView: View {
                     scrollProxy = proxy
                     scrollToBottom()
                 }
-                .onChange(of: chatVM.currentThreadMessages.count) { _ in
+                .onChange(of: chatVM.currentThreadMessages.count) { oldValue, newValue in
                     scrollToBottom()
                 }
             }
@@ -252,6 +266,80 @@ struct MessageBubble: View {
         let formatter = DateFormatter()
         formatter.timeStyle = .short
         return formatter.string(from: date)
+    }
+}
+
+// MARK: - New Conversation Sheet
+struct NewConversationSheet: View {
+    @ObservedObject var chatVM: ChatViewModel
+    @ObservedObject var searchVM: SearchViewModel
+    @Environment(\.dismiss) private var dismiss
+    @State private var selectedPost: Post?
+    
+    var body: some View {
+        NavigationView {
+            VStack {
+                if searchVM.isLoading {
+                    ProgressView("Loading posts...")
+                        .padding()
+                } else if searchVM.searchResults.isEmpty {
+                    VStack(spacing: 20) {
+                        Image(systemName: "text.bubble")
+                            .font(.system(size: 60))
+                            .foregroundColor(.gray)
+                        Text("No Posts Available")
+                            .font(.headline)
+                        Text("Create a post first to start conversations")
+                            .font(.subheadline)
+                            .foregroundColor(.gray)
+                            .multilineTextAlignment(.center)
+                    }
+                    .padding()
+                } else {
+                    List(searchVM.searchResults) { post in
+                        Button(action: {
+                            selectedPost = post
+                            startConversation(about: post)
+                        }) {
+                            VStack(alignment: .leading, spacing: 8) {
+                                Text(post.title)
+                                    .font(.headline)
+                                    .foregroundColor(.primary)
+                                
+                                Text("$\(String(format: "%.0f", post.price))")
+                                    .font(.subheadline)
+                                    .foregroundColor(.blue)
+                                
+                                Text("Seller: \(post.sellerName ?? "Unknown")")
+                                    .font(.caption)
+                                    .foregroundColor(.gray)
+                            }
+                            .padding(.vertical, 4)
+                        }
+                        .disabled(selectedPost == post)
+                    }
+                    .listStyle(.plain)
+                }
+            }
+            .navigationTitle("Start New Chat")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button("Cancel") {
+                        dismiss()
+                    }
+                }
+            }
+        }
+    }
+    
+    private func startConversation(about post: Post) {
+        Task {
+            // Create thread with the current test user as buyer and post owner as seller
+            await chatVM.startConversation(post: post)
+            // Close the sheet
+            dismiss()
+        }
     }
 }
 

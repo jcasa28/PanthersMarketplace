@@ -16,9 +16,8 @@ class ChatViewModel: ObservableObject {
     @Published var isSendingMessage = false
     @Published var errorMessage: String?
     
-    // MARK: - Test User Properties (for testing without authentication)
-    @Published var testUserId: UUID?
-    @Published var testUsername: String = "Test User"
+    // MARK: - Authentication (like posts use)
+    private var authVM: AuthViewModel?
     
     // MARK: - Current Thread
     @Published var currentThread: ThreadWithDetails?
@@ -29,16 +28,30 @@ class ChatViewModel: ObservableObject {
     private let pollingInterval: TimeInterval = 3.0 // Poll every 3 seconds
     
     // MARK: - Initialization
-    init() {
+    init(authVM: AuthViewModel? = nil) {
+        self.authVM = authVM
         print("💬 ChatViewModel initialized")
+    }
+    
+    // MARK: - Computed Properties
+    
+    /// Current authenticated user ID (like posts use authVM.userId)
+    private var currentUserId: UUID? {
+        authVM?.userId
+    }
+    
+    /// Check if user is authenticated
+    var isAuthenticated: Bool {
+        authVM?.isLoggedIn ?? false
     }
     
     // MARK: - Public Methods
     
-    /// Load all threads for the current test user
+    /// Load all threads for the current authenticated user
     func loadThreads() async {
-        guard let userId = testUserId else {
-            errorMessage = "No test user selected. Please select a user to view chats."
+        guard let userId = currentUserId else {
+            errorMessage = "Please log in to view your conversations."
+            print("⚠️ Cannot load threads: User not authenticated")
             return
         }
         
@@ -79,8 +92,9 @@ class ChatViewModel: ObservableObject {
     
     /// Send a new message
     func sendMessage(text: String, to receiverId: UUID, postId: UUID) async {
-        guard let senderId = testUserId else {
-            errorMessage = "No test user selected"
+        guard let senderId = currentUserId else {
+            errorMessage = "Please log in to send messages."
+            print("⚠️ Cannot send message: User not authenticated")
             return
         }
         
@@ -113,8 +127,9 @@ class ChatViewModel: ObservableObject {
     
     /// Create a new thread for a post
     func createThread(postId: UUID, sellerId: UUID) async -> UUID? {
-        guard let buyerId = testUserId else {
-            errorMessage = "No test user selected"
+        guard let buyerId = currentUserId else {
+            errorMessage = "Please log in to start a conversation."
+            print("⚠️ Cannot create thread: User not authenticated")
             return nil
         }
         
@@ -151,21 +166,15 @@ class ChatViewModel: ObservableObject {
         }
     }
     
-    /// Check if message is from current test user
-    func isMessageFromCurrentUser(_ message: Message) -> Bool {
-        return message.senderId == testUserId
+    /// Refresh the current thread (manual refresh)
+    func refreshCurrentThread() async {
+        guard let thread = currentThread else { return }
+        await loadMessages(for: thread)
     }
     
-    /// Set test user (for testing without authentication)
-    func setTestUser(userId: UUID, username: String) {
-        self.testUserId = userId
-        self.testUsername = username
-        print("💬 Test user set to: \(username) (\(userId))")
-        
-        // Reload threads for new user
-        Task {
-            await loadThreads()
-        }
+    /// Check if message is from current authenticated user
+    func isMessageFromCurrentUser(_ message: Message) -> Bool {
+        return message.senderId == currentUserId
     }
     
     // MARK: - Real-time Updates (Simplified Polling)
@@ -234,7 +243,7 @@ class ChatViewModel: ObservableObject {
     
     /// Refresh threads silently (for polling)
     private func refreshThreads() async {
-        guard let userId = testUserId else { return }
+        guard let userId = currentUserId else { return }
         
         do {
             let updatedThreads = try await SupabaseService.shared.fetchThreadsForUser(userId: userId)
@@ -247,12 +256,6 @@ class ChatViewModel: ObservableObject {
         } catch {
             print("⚠️ Silent thread refresh failed: \(error)")
         }
-    }
-    
-    /// Manually refresh current thread messages
-    func refreshCurrentThread() async {
-        guard let thread = currentThread else { return }
-        await loadMessages(for: thread)
     }
     
     /// Get thread count for stats

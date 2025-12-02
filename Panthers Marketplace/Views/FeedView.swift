@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct FeedView: View {
+    @EnvironmentObject var authVM: AuthViewModel  // Get auth from environment
     @StateObject private var searchVM = SearchViewModel()
     @State private var showUploadPost = false
     @State private var selectedCategory: ProductCategory?
@@ -69,6 +70,39 @@ struct FeedView: View {
                                         .foregroundColor(.gray)
                                 }
                             }
+                            
+                            // ============================================================
+                            // SORT BUTTON - UI TEAM: This is a Menu dropdown approach
+                            // ============================================================
+                            // WHAT THIS DOES:
+                            // - Shows an arrow.up.arrow.down icon in the search bar
+                            // - When tapped, opens a dropdown menu with all sort options
+                            // - Checkmark appears next to currently selected option
+                            //
+                            // HOW TO CUSTOMIZE:
+                            // 1. Change icon: Replace "arrow.up.arrow.down" with any SF Symbol
+                            //    Examples: "line.3.horizontal.decrease.circle", "arrow.up.arrow.down.circle"
+                            // 2. Change color: Modify .foregroundColor(.gray) to your brand color
+                            // 3. Move location: Cut this entire Menu block and paste elsewhere
+                            // 4. Change to button style: See "UI ALTERNATIVES" section below
+                            //
+                            Menu {
+                                ForEach(SortOption.allCases, id: \.self) { option in
+                                    Button(action: { searchVM.sortBy(option) }) {
+                                        HStack {
+                                            Text(option.rawValue)
+                                            if searchVM.currentSort == option {
+                                                Image(systemName: "checkmark")
+                                            }
+                                        }
+                                    }
+                                }
+                            } label: {
+                                Image(systemName: "arrow.up.arrow.down")
+                                    .foregroundColor(.gray)
+                            }
+                            // ============================================================
+                            
                             Button(action: { showingFilterSheet = true }) {
                                 Image(systemName: "slider.horizontal.3")
                                     .foregroundColor(.gray)
@@ -146,8 +180,12 @@ struct FeedView: View {
                                                 searchVM.filterByCampus(nil)
                                             }
                                         }
-                                        if let minPrice = filters.minPrice, let maxPrice = filters.maxPrice {
-                                            FilterTag(text: "$\(String(format: "%.2f", minPrice))-$\(String(format: "%.2f", maxPrice))") {
+                                        
+                                        // FIXED (Issue 3): Display price filter tag for single-bound or range filtering
+                                        // Previously only showed tag when BOTH min AND max were set
+                                        // Now shows "Min: $X", "Max: $X", or "$X-$Y" based on what's active
+                                        if filters.minPrice != nil || filters.maxPrice != nil {
+                                            FilterTag(text: priceFilterText(filters: filters)) {
                                                 self.minPrice = ""
                                                 self.maxPrice = ""
                                                 searchVM.filterByPrice(min: nil, max: nil)
@@ -184,7 +222,13 @@ struct FeedView: View {
                             } else {
                                 LazyVGrid(columns: listingColumns, spacing: 20) {
                                     ForEach(searchVM.searchResults) { post in
-                                        NavigationLink(destination: ListingDetailView(listing: post)) {
+                                        NavigationLink(destination: ListingDetailView(listing: post)
+                                            // ============================================================
+                                            // UI TEAM: Pass auth and search ViewModels for backend functionality
+                                            // ============================================================
+                                            .environmentObject(authVM)
+                                            .environmentObject(searchVM)) {
+                                            // ============================================================
                                             ListingCard(listing: post)
                                         }
                                         .buttonStyle(.plain)
@@ -192,6 +236,24 @@ struct FeedView: View {
                                             // Trigger load more when user scrolls near the end
                                             searchVM.loadMoreIfNeeded(currentPost: post)
                                         }
+                                        // ============================================================
+                                        // BACKEND: Refresh data when returning from detail view
+                                        // WHY: If user edits a post in ListingDetailView, the changes
+                                        // are saved to database but not reflected in this cached list.
+                                        // This re-fetches from database to show latest data.
+                                        //
+                                        // FRONTEND TEAM NOTES:
+                                        // - You can add a loading indicator during refresh
+                                        // - You can replace this with pull-to-refresh gesture
+                                        // - You can debounce if user navigates quickly
+                                        // - Current implementation: silent background refresh
+                                        // ============================================================
+                                        // ============================================================
+                                        // BACKEND NOTE: Auto-refresh removed due to excessive calls
+                                        // The refresh was triggering when cards scrolled off-screen
+                                        // FRONTEND TEAM: Add pull-to-refresh gesture if needed
+                                        // Or implement smart refresh only when returning from edit
+                                        // ============================================================
                                     }
                                     
                                     // Loading indicator for pagination
@@ -246,9 +308,11 @@ struct FeedView: View {
                     }
                     .offset(x : 9)
                     Spacer()
-                    VStack {
-                        Image(systemName: "ellipsis.message")
-                        Text("Messages")
+                    NavigationLink(destination: ChatListView()) {
+                        VStack {
+                            Image(systemName: "ellipsis.message")
+                            Text("Messages")
+                        }
                     }
                     Spacer()
                     NavigationLink(destination: ProfileView()) {
@@ -271,6 +335,7 @@ struct FeedView: View {
             .ignoresSafeArea(edges: .bottom)
             .sheet(isPresented: $showUploadPost) {
                 UploadPostView()
+                    .environmentObject(authVM)
             }
             .sheet(isPresented: $showingFilterSheet) {
                 FilterSheetView(
@@ -281,13 +346,48 @@ struct FeedView: View {
                     onApply: { category, campus, min, max in
                         searchVM.filterByCategory(category)
                         searchVM.filterByCampus(campus)
-                        if let minVal = Double(min), let maxVal = Double(max) {
-                            searchVM.filterByPrice(min: minVal, max: maxVal)
+                        
+                        // FIXED (Issue 2): Allow single-bound price filtering (min-only or max-only)
+                        // Previously required BOTH min AND max to be set
+                        // Now converts empty strings to nil and applies available bounds independently
+                        let minVal = min.isEmpty ? nil : Double(min)
+                        let maxVal = max.isEmpty ? nil : Double(max)
+                        searchVM.filterByPrice(min: minVal, max: maxVal)
+                        
+                        // FIXED (Issue 3): Synchronize UI state with actual applied filters
+                        // This ensures filter tags accurately reflect what's actually filtered
+                        // Prevents showing filter tags for filters that failed validation
+                        let appliedFilters = searchVM.getCurrentFilters()
+                        
+                        // Update UI state to match what was actually applied
+                        if appliedFilters.minPrice != nil || appliedFilters.maxPrice != nil {
+                            // Price filter was successfully applied - keep the UI values
+                            self.minPrice = min
+                            self.maxPrice = max
+                        } else if !min.isEmpty || !max.isEmpty {
+                            // Price values were entered but filter wasn't applied (validation failed)
+                            // Clear the UI to show the filter wasn't applied
+                            self.minPrice = ""
+                            self.maxPrice = ""
                         }
+                        
                         showingFilterSheet = false
                     }
                 )
             }
+        }
+    }
+    
+    // Helper function to format price filter text
+    private func priceFilterText(filters: SearchFilters) -> String {
+        if let min = filters.minPrice, let max = filters.maxPrice {
+            return "$\(String(format: "%.2f", min))-$\(String(format: "%.2f", max))"
+        } else if let min = filters.minPrice {
+            return "Min: $\(String(format: "%.2f", min))"
+        } else if let max = filters.maxPrice {
+            return "Max: $\(String(format: "%.2f", max))"
+        } else {
+            return ""
         }
     }
 }
@@ -374,5 +474,7 @@ struct FilterSheetView: View {
 #Preview {
     FeedView()
         .environmentObject(ProfileViewModel())
+        .environmentObject(AuthViewModel())
+        .environmentObject(ChatViewModel())
 }
 

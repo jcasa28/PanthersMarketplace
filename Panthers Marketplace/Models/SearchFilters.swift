@@ -23,6 +23,74 @@ enum Campus: String, Codable {
     case bbc = "BBC Campus"
     case library = "Library"
     case business = "Business Campus"
+    
+    /// Maps UI-friendly names to database values that match the CHECK constraint
+    var databaseValue: String {
+        switch self {
+        case .engineering:
+            return "Engineering"
+        case .mmc:
+            return "MMC"
+        case .housing:
+            return "Housing"
+        case .bbc:
+            return "BBC"
+        case .library:
+            return "Library"
+        case .business:
+            return "Business"
+        }
+    }
+}
+
+// MARK: - Sort Options
+enum SortOption: String, Codable, CaseIterable {
+    case newest = "Newest First"
+    case oldest = "Oldest First"
+    case priceLowToHigh = "Price: Low to High"
+    case priceHighToLow = "Price: High to Low"
+    case titleAZ = "Title: A-Z"
+    case titleZA = "Title: Z-A"
+    
+    /// Returns the database column name to sort by
+    var columnName: String {
+        switch self {
+        case .newest, .oldest:
+            return "created_at"
+        case .priceLowToHigh, .priceHighToLow:
+            return "price"
+        case .titleAZ, .titleZA:
+            return "title"
+        }
+    }
+    
+    /// Returns whether sorting should be ascending or descending
+    var isAscending: Bool {
+        switch self {
+        case .oldest, .priceLowToHigh, .titleAZ:
+            return true
+        case .newest, .priceHighToLow, .titleZA:
+            return false
+        }
+    }
+    
+    /// Icon to display in UI (optional - UI team can customize)
+    var iconName: String {
+        switch self {
+        case .newest:
+            return "clock.arrow.circlepath"
+        case .oldest:
+            return "clock"
+        case .priceLowToHigh:
+            return "arrow.up.circle"
+        case .priceHighToLow:
+            return "arrow.down.circle"
+        case .titleAZ:
+            return "textformat.abc"
+        case .titleZA:
+            return "textformat.abc.dottedunderline"
+        }
+    }
 }
 
 struct SearchFilters {
@@ -30,15 +98,18 @@ struct SearchFilters {
     var minPrice: Double?
     var maxPrice: Double?
     var campus: Campus?
+    var sortOption: SortOption = .newest  // Default: newest first
     
     init(category: ProductCategory? = nil,
          minPrice: Double? = nil,
          maxPrice: Double? = nil,
-         campus: Campus? = nil) {
+         campus: Campus? = nil,
+         sortOption: SortOption = .newest) {
         self.category = category
         self.minPrice = minPrice
         self.maxPrice = maxPrice
         self.campus = campus
+        self.sortOption = sortOption
     }
     
     func isValidPriceRange() -> Bool {
@@ -63,7 +134,8 @@ extension SearchFilters: Equatable {
         lhs.category == rhs.category &&
         lhs.minPrice == rhs.minPrice &&
         lhs.maxPrice == rhs.maxPrice &&
-        lhs.campus == rhs.campus
+        lhs.campus == rhs.campus &&
+        lhs.sortOption == rhs.sortOption
     }
 }
 

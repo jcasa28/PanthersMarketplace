@@ -16,7 +16,7 @@ struct Post: Identifiable, Codable {
     let price: Double
     let category: String // Changed to String to match database
     let userId: UUID // Changed from sellerId to match database column name
-    let sellerName: String // This will come from the joined profiles table
+    let sellerName: String? // This will come from the joined profiles table, now optional
     let status: String
     let createdAt: Date
     
@@ -40,7 +40,7 @@ struct Post: Identifiable, Codable {
         price: Double,
         category: String,
         userId: UUID,
-        sellerName: String,
+        sellerName: String?,
         status: String = "active",
         createdAt: Date = Date()
     ) {
@@ -89,5 +89,3 @@ extension Post: Hashable {
         hasher.combine(id)
     }
 }
-
-
