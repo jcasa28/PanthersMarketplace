@@ -9,7 +9,7 @@ import SwiftUI
 
 struct ProfileView: View {
     private let headerColor = Color(red: 9/255, green: 27/255, blue: 61/255)
-    
+    @EnvironmentObject var profileVM: ProfileViewModel
     @StateObject private var searchVM = SearchViewModel()
     
     enum ProfileTab: String, CaseIterable, Identifiable {
@@ -76,15 +76,28 @@ struct ProfileView: View {
                 .fill(headerColor)
             
             HStack(alignment: .center, spacing: 16) {
-                Image("profile_avatar")
-                    .resizable()
-                    .scaledToFill()
-                    .frame(width: 70, height: 70)
-                    .clipShape(Circle())
-                    .overlay(
+                if let img = profileVM.profileImage {
+                    Image(uiImage: img)
+                        .resizable()
+                        .scaledToFill()
+                        .frame(width: 70, height: 70)
+                        .clipShape(Circle())
+                        .overlay(Circle().stroke(Color.white, lineWidth: 2))
+                } else {
+                    ZStack {
                         Circle()
-                            .stroke(Color.white, lineWidth: 2)
-                    )
+                            .fill(Color.gray.opacity(0.3))
+                        
+                        Image(systemName: "person.fill")
+                            .resizable()
+                            .scaledToFit()
+                            .foregroundColor(.gray)
+                            .padding(15)
+                    }
+                    .frame(width: 70, height: 70)
+                    .overlay(Circle().stroke(Color.white, lineWidth: 2))
+
+                }
                 
                 VStack(alignment: .leading, spacing: 6) {
                     Text("John Doe")
@@ -114,10 +127,10 @@ struct ProfileView: View {
                 }
                 
                 Spacer()
-                
-                Button(action: {
-                    // TODO: Edit profile action
-                }) {
+                NavigationLink {
+                    EditProfileView()
+                        .environmentObject(profileVM)
+                } label: {
                     Text("Edit Profile")
                         .font(.subheadline.weight(.semibold))
                         .padding(.horizontal, 16)
@@ -126,6 +139,9 @@ struct ProfileView: View {
                         .foregroundColor(headerColor)
                         .clipShape(Capsule())
                 }
+
+                    
+                
             }
             .padding(16)
         }
@@ -198,3 +214,7 @@ struct ProfileView: View {
 }
 
 
+#Preview{
+    ProfileView()
+        .environmentObject(ProfileViewModel())
+}

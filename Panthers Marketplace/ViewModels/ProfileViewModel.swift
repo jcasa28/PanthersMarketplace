@@ -7,13 +7,21 @@
 
 import Foundation
 import Combine
+import SwiftUI
 
 @MainActor
 final class ProfileViewModel: ObservableObject {
     // MARK: - Published Properties
-    
+    @Published var profileImage: UIImage? = nil   // ← shared profile picture
+        
+        func updateProfileImage(_ image: UIImage) {
+            self.profileImage = image
+            
+        }
     /// The current user's profile data
     @Published private(set) var user: User?
+   
+   
     
     /// The user's activity statistics
     @Published private(set) var stats: UserStats = .empty

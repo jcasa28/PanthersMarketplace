@@ -114,7 +114,8 @@ struct FeedView: View {
                                             selectedCategory = .clothing
                                             searchVM.filterByCategory(.clothing)
                                         }
-                                    CategoryCard(label: "Transportation", icon: "🚲", red: 255, green: 237, blue: 212)
+                                    CategoryCard(label: "Transport", icon: "🚲", red: 255, green: 237, blue: 212)
+                            
                                         .onTapGesture {
                                             selectedCategory = .transportation
                                             searchVM.filterByCategory(.transportation)
@@ -243,6 +244,7 @@ struct FeedView: View {
                                 .font(.system(size: 25))
                         }
                     }
+                    .offset(x : 9)
                     Spacer()
                     VStack {
                         Image(systemName: "ellipsis.message")
@@ -371,5 +373,6 @@ struct FilterSheetView: View {
 
 #Preview {
     FeedView()
+        .environmentObject(ProfileViewModel())
 }
 
