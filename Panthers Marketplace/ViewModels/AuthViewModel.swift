@@ -3,8 +3,7 @@
 //  Panthers Marketplace
 //
 //  Created by Eilyn Fabiana Tudares Granadillo on 11/12/25.
-
-
+//
 
 import Foundation
 import Supabase
@@ -59,7 +58,8 @@ final class AuthViewModel: ObservableObject {
     }
 
     // MARK: - Public API
-    /// Email + password sign up (with full name metadata)
+    
+    /// Email + password sign up (with full name metadata AND profile creation)
     func signUp(fullName: String, email: String, password: String) async {
         guard isFIU(email) else {
             errorMessage = "Use your @fiu.edu email."
@@ -67,19 +67,26 @@ final class AuthViewModel: ObservableObject {
         }
 
         await runAuthOperation {
-
-            // Send profile metadata to Supabase
+            // Send profile metadata to Supabase Auth
             let metadata: [String: AnyJSON] = [
                 "full_name": .string(fullName)
             ]
 
-            _ = try await self.client.auth.signUp(
+            let response = try await self.client.auth.signUp(
                 email: email,
                 password: password,
                 data: metadata
             )
+            
+            // ✅ CREATE PROFILE IMMEDIATELY AFTER SIGNUP
+            let userId = response.user.id
+            try await self.createProfile(
+                userId: userId,
+                fullName: fullName,
+                email: email
+            )
 
-            // After signup, fetch the current session from Supabase
+            // After signup and profile creation, fetch the current session
             await self.restoreSession()
         }
     }
@@ -145,6 +152,43 @@ final class AuthViewModel: ObservableObject {
         }
 
         isLoading = false
+    }
+
+    /// Create profile in profiles table
+    private func createProfile(userId: UUID, fullName: String, email: String) async throws {
+        struct ProfileInsert: Codable {
+            let id: String
+            let username: String
+            let role: String
+            let contact_info: String?
+        }
+        
+        // Generate username from email (e.g., jdoe@fiu.edu -> jdoe)
+        let username = email.components(separatedBy: "@").first ?? "user_\(userId.uuidString.prefix(8))"
+        
+        let profileInsert = ProfileInsert(
+            id: userId.uuidString,
+            username: username,
+            role: "buyer",  // Default role
+            contact_info: email  // Store email as contact info
+        )
+        
+        do {
+            try await client.from("profiles")
+                .insert(profileInsert)
+                .execute()
+            
+            print("✅ Profile created for user: \(username)")
+        } catch let error as PostgrestError {
+            print("❌ Error creating profile: \(error.message)")
+            if let hint = error.hint {
+                print("💡 Hint: \(hint)")
+            }
+            throw error
+        } catch {
+            print("❌ Unknown error creating profile: \(error)")
+            throw error
+        }
     }
 
     /// Apply a Supabase `Session` to our published state

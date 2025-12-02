@@ -820,8 +820,7 @@ final class SupabaseService {
         do {
             print("🔄 Creating new post: '\(title)' by user \(userId)")
             
-            // Ensure profile exists before creating post (fixes foreign key constraint)
-            try await ensureProfileExists(userId: userId)
+
             
             // Structure to match database columns for insertion
             struct PostInsert: Codable {
