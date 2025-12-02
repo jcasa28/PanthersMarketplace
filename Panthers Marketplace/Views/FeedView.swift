@@ -306,9 +306,11 @@ struct FeedView: View {
                         }
                     }
                     Spacer()
-                    VStack {
-                        Image(systemName: "ellipsis.message")
-                        Text("Messages")
+                    NavigationLink(destination: ChatListView()) {
+                        VStack {
+                            Image(systemName: "ellipsis.message")
+                            Text("Messages")
+                        }
                     }
                     Spacer()
                     NavigationLink(destination: ProfileView()) {

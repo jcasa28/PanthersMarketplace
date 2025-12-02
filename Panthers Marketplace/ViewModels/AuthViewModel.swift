@@ -5,6 +5,7 @@
 //  Created by Eilyn Fabiana Tudares Granadillo on 11/12/25.
 
 
+
 import Foundation
 import Supabase
 #if canImport(GoTrue)
@@ -36,33 +37,46 @@ final class AuthViewModel: ObservableObject {
 
     // MARK: - Convenience
 
+    /// User is considered logged in only if we have a non-nil, non-expired session
     var isLoggedIn: Bool {
-        session != nil
+        if let session = session {
+            return !session.isExpired
+        }
+        return false
     }
 
     // MARK: - Init
 
     init() {
-        // Try to restore an existing session on app launch
-        Task {
-            await restoreSession()
-        }
+        // For now, DO NOT auto-restore session on launch.
+        // This ensures the app always starts on LoginView.
+        //
+        // If later you want auto-login, you can uncomment:
+        //
+        // Task {
+        //     await restoreSession()
+        // }
     }
 
     // MARK: - Public API
-
-    /// Email + password sign up
-    func signUp(email: String, password: String) async {
+    /// Email + password sign up (with full name metadata)
+    func signUp(fullName: String, email: String, password: String) async {
         guard isFIU(email) else {
             errorMessage = "Use your @fiu.edu email."
             return
         }
 
         await runAuthOperation {
-          
+
+            // Send profile metadata to Supabase
+            let metadata: [String: AnyJSON] = [
+                "full_name": .string(fullName)
+            ]
+
             _ = try await self.client.auth.signUp(
                 email: email,
-                password: password
+                password: password,
+                data: metadata
             )
 
             // After signup, fetch the current session from Supabase
@@ -78,13 +92,11 @@ final class AuthViewModel: ObservableObject {
         }
 
         await runAuthOperation {
-            // Ignore return type; just perform the auth call
             _ = try await self.client.auth.signIn(
                 email: email,
                 password: password
             )
 
-            // Then fetch the session
             await self.restoreSession()
         }
     }
@@ -97,17 +109,19 @@ final class AuthViewModel: ObservableObject {
         }
     }
 
-    /// Refresh (re-fetch) current session from Supabase
+    /// Refresh (re-fetch) current session from Supabase.
+    /// You can call this manually later if you want "remember me" behavior.
     func restoreSession() async {
         isLoading = true
         errorMessage = nil
 
         do {
-            // SDK exposes current session via `client.auth.session`
-            if let currentSession = try? await client.auth.session {
-                await applySession(currentSession)
-            } else {
+            let currentSession = try await client.auth.session
+
+            if currentSession.isExpired {
                 clearSession()
+            } else {
+                await applySession(currentSession)
             }
         } catch {
             clearSession()
@@ -139,7 +153,7 @@ final class AuthViewModel: ObservableObject {
         self.userId = session.user.id
         self.email = session.user.email
 
-       
+        // You can later replace this with a profile fetch
         self.displayName = session.user.email
         self.rating = nil
         self.photoURL = nil

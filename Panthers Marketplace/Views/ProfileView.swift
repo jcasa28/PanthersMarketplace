@@ -147,7 +147,10 @@ struct ProfileView: View {
             Divider().frame(height: 32)
             statItem(count: profileVM.stats.savedItemsCount, label: "Saved")
             Divider().frame(height: 32)
-            statItem(count: profileVM.stats.chatsCount, label: "Chats")
+            NavigationLink(destination: ChatListView()) {
+                statItem(count: profileVM.stats.chatsCount, label: "Chats")
+                    .foregroundColor(.primary)
+            }
         }
         .frame(maxWidth: .infinity)
         .padding()
@@ -188,12 +191,6 @@ struct ProfileView: View {
         let isSavedTab = selectedTab == .savedItems
         let data = isSavedTab ? savedListings : myListings
         return VStack(alignment: .leading, spacing: 12) {
-            if !isSavedTab && data.isEmpty {
-                Text("No listings found for this user.")
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
-                    .padding(.vertical, 16)
-            }
             if isSavedTab {
                 Text("Saved Items")
                     .font(.title2.weight(.semibold))

@@ -47,7 +47,8 @@ final class SearchViewModel: ObservableObject {
     
     init() {
         setupDebouncedSearch()
-        loadInitialPosts()
+        // Don't auto-load posts in init - let the view trigger it in onAppear
+        // This prevents duplicate queries when multiple views create SearchViewModel instances
     }
     
     // MARK: - Debounced Search Setup

@@ -58,7 +58,11 @@ struct ListingDetailView: View {
                             .foregroundStyle(.primary)
 
                         HStack(spacing: 12) {
-                            Label("Seller: \(listing.sellerName)", systemImage: "person.circle")
+                            if let sellerName = listing.sellerName {
+                                Label("Seller: \(sellerName)", systemImage: "person.circle")
+                            } else {
+                                Label("Seller: Unknown", systemImage: "person.circle")
+                            }
                             Circle().frame(width: 4, height: 4).foregroundStyle(.secondary)
                             Label(timeAgoString(from: listing.createdAt), systemImage: "clock")
                         }

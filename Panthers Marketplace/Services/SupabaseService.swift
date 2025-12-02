@@ -460,6 +460,7 @@ final class SupabaseService {
         let buyer_id: UUID
         let seller_id: UUID
         let post_id: UUID
+        let created_at: Date
     }
     
     // MARK: - Messaging Methods
@@ -469,64 +470,81 @@ final class SupabaseService {
         do {
             print("🔄 Fetching threads for user: \(userId)")
             
-            struct ThreadResponse: Codable {
-                let id: UUID
-                let post_id: UUID
-                let buyer_id: UUID
-                let seller_id: UUID
-                let created_at: Date
-                let posts: PostInfo?
-                let buyer_profile: ProfileInfo?
-                let seller_profile: ProfileInfo?
-                
-                struct PostInfo: Codable {
-                    let title: String
-                }
-                
-                struct ProfileInfo: Codable {
-                    let username: String
-                }
-            }
-            
-            let threadsResponse: [ThreadResponse] = try await client.from("threads")
-                .select("""
-                    id, post_id, buyer_id, seller_id, created_at,
-                    posts!threads_post_id_fkey(title),
-                    buyer_profile:profiles!threads_buyer_id_fkey(username),
-                    seller_profile:profiles!threads_seller_id_fkey(username)
-                    """)
+            // Step 1: Fetch basic thread data
+            let threadsResponse: [Thread] = try await client.from("threads")
+                .select()
                 .or("buyer_id.eq.\(userId.uuidString),seller_id.eq.\(userId.uuidString)")
                 .order("created_at", ascending: false)
                 .execute()
                 .value
             
-            let threads = threadsResponse.compactMap { thread -> ThreadWithDetails? in
-                guard let postInfo = thread.posts,
-                      let buyerProfile = thread.buyer_profile,
-                      let sellerProfile = thread.seller_profile else {
-                    print("⚠️ Warning: Thread \(thread.id) missing related data")
-                    return nil
+            print("DEBUG: Fetched \(threadsResponse.count) raw threads")
+            
+            // Step 2: For each thread, fetch post and profile data separately
+            var threadsWithDetails: [ThreadWithDetails] = []
+            
+            for thread in threadsResponse {
+                // Fetch post title
+                struct PostTitle: Codable {
+                    let title: String
+                }
+                
+                let postResult: PostTitle? = try? await client.from("posts")
+                    .select("title")
+                    .eq("id", value: thread.post_id.uuidString)
+                    .single()
+                    .execute()
+                    .value
+                
+                // Fetch buyer username
+                struct ProfileUsername: Codable {
+                    let username: String
+                }
+                
+                let buyerProfile: ProfileUsername? = try? await client.from("profiles")
+                    .select("username")
+                    .eq("id", value: thread.buyer_id.uuidString)
+                    .single()
+                    .execute()
+                    .value
+                
+                // Fetch seller username
+                let sellerProfile: ProfileUsername? = try? await client.from("profiles")
+                    .select("username")
+                    .eq("id", value: thread.seller_id.uuidString)
+                    .single()
+                    .execute()
+                    .value
+                
+                // Only add thread if we successfully got all required data
+                guard let postTitle = postResult?.title,
+                      let buyerUsername = buyerProfile?.username,
+                      let sellerUsername = sellerProfile?.username else {
+                    print("⚠️ Warning: Thread \(thread.id) missing related data, skipping")
+                    continue
                 }
                 
                 // Determine who the "other" person in the conversation is
                 let isCurrentUserBuyer = thread.buyer_id == userId
-                let otherPersonName = isCurrentUserBuyer ? sellerProfile.username : buyerProfile.username
+                let otherPersonName = isCurrentUserBuyer ? sellerUsername : buyerUsername
                 let otherPersonId = isCurrentUserBuyer ? thread.seller_id : thread.buyer_id
                 
-                return ThreadWithDetails(
+                let threadWithDetails = ThreadWithDetails(
                     id: thread.id,
                     postId: thread.post_id,
-                    postTitle: postInfo.title,
+                    postTitle: postTitle,
                     buyerId: thread.buyer_id,
                     sellerId: thread.seller_id,
                     otherPersonName: otherPersonName,
                     otherPersonId: otherPersonId,
                     createdAt: thread.created_at
                 )
+                
+                threadsWithDetails.append(threadWithDetails)
             }
             
-            print("✅ Successfully fetched \(threads.count) threads")
-            return threads
+            print("✅ Successfully fetched \(threadsWithDetails.count) threads with details")
+            return threadsWithDetails
             
         } catch let error as PostgrestError {
             print("❌ Database error fetching threads: \(error.message)")
@@ -739,8 +757,8 @@ final class SupabaseService {
     // MARK: - Posts CRUD Operations
     
     /// Ensures a profile exists for the given user ID, creates one if missing
-    /// This is a safety check for when auth users don't have profiles yet
-    private func ensureProfileExists(userId: UUID, username: String? = nil) async throws {
+    /// This should be called right after user signup to properly link auth.users with profiles table
+    func ensureProfileExists(userId: UUID, username: String? = nil) async throws {
         do {
             // Check if profile exists
             let existingProfiles: [User] = try await client.from("profiles")

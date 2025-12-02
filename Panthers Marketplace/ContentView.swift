@@ -225,11 +225,6 @@ struct ContentView: View {
             testUser = result.user
             testStats = result.stats
             
-            // Set the test user in ChatViewModel for messaging
-            if let uuid = UUID(uuidString: userId) {
-                chatVM.setTestUser(userId: uuid, username: result.user.username)
-            }
-            
             print("✅ Loaded stats for user: \(result.user.username)")
         } catch {
             testError = "Failed to load stats: \(error.localizedDescription)"
