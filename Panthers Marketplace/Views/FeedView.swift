@@ -308,7 +308,7 @@ struct FeedView: View {
                     }
                     .offset(x : 9)
                     Spacer()
-                    NavigationLink(destination: ChatListView()) {
+                    NavigationLink(destination: MessageView()) {
                         VStack {
                             Image(systemName: "ellipsis.message")
                             Text("Messages")
