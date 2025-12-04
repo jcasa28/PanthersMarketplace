@@ -9,6 +9,7 @@ struct ListingDetailView: View {
     let listing: Post
     @SwiftUI.Environment(\.dismiss) private var dismiss
     @EnvironmentObject var authVM: AuthViewModel
+    @EnvironmentObject var profileVM: ProfileViewModel
     @State private var isFavorited = false
     
     // ============================================================
@@ -45,7 +46,6 @@ struct ListingDetailView: View {
                         .frame(height: 320)
                         .clipped()
 
-
                     VStack(alignment: .leading, spacing: 10) {
                         Text(String(format: "$%.0f", listing.price))
                             .font(.title3)
@@ -56,10 +56,17 @@ struct ListingDetailView: View {
                             .foregroundStyle(.primary)
 
                         HStack(spacing: 12) {
+                            // Seller avatar + name
+                            UserAvatarView(
+                                userIdString: listing.userId.uuidString,
+                                size: 20,
+                                cornerRadius: 10,
+                                reloadToken: profileVM.avatarReloadToken
+                            )
                             if let sellerName = listing.sellerName {
-                                Label("Seller: \(sellerName)", systemImage: "person.circle")
+                                Text("Seller: \(sellerName)")
                             } else {
-                                Label("Seller: Unknown", systemImage: "person.circle")
+                                Text("Seller: Unknown")
                             }
                             Circle().frame(width: 4, height: 4).foregroundStyle(.secondary)
                             Label(timeAgoString(from: listing.createdAt), systemImage: "clock")
@@ -201,10 +208,6 @@ struct ListingDetailView: View {
                 }
             }
         }
-        // ============================================================
-        // EDIT SHEET - UI TEAM: Replace this entire sheet with your design
-        // This is a simple Form-based edit UI - feel free to replace
-        // ============================================================
         .sheet(isPresented: $showEditSheet) {
             NavigationView {
                 Form {
@@ -248,10 +251,6 @@ struct ListingDetailView: View {
                 }
             }
         }
-        // ============================================================
-        // DELETE CONFIRMATION - UI TEAM: Replace with your custom dialog
-        // This shows a confirmation before deleting
-        // ============================================================
         .confirmationDialog(
             "Delete this listing?",
             isPresented: $showDeleteConfirmation,
@@ -266,21 +265,8 @@ struct ListingDetailView: View {
         } message: {
             Text("This listing will be removed from the marketplace. This action cannot be undone.")
         }
-        // ============================================================
     }
     
-    // ============================================================
-    // SAVE CHANGES - UI TEAM: This handles the actual update logic
-    // Connect your custom edit UI to this function
-    //
-    // BACKEND NOTE FOR FRONTEND TEAM:
-    // When this function successfully updates a post:
-    // 1. Changes are saved to database ✅
-    // 2. Parent views (FeedView/ProfileView) automatically refresh when user goes back
-    // 3. The refresh happens via .onDisappear in parent views
-    // 4. You don't need to manually update any caches here
-    // 5. Just save, close sheet, and parent will handle the rest
-    // ============================================================
     @MainActor
     private func saveChanges() async {
         guard !isUpdating else { return }
@@ -288,17 +274,13 @@ struct ListingDetailView: View {
         updateError = nil
         
         do {
-            // Parse price
             guard let price = Double(editPriceText) else {
                 updateError = "Invalid price format"
                 isUpdating = false
                 return
             }
             
-            // Create ListingsViewModel with auth
             let listingsVM = ListingsViewModel(authVM: authVM)
-            
-            // Call update
             _ = try await listingsVM.updateListing(
                 postId: listing.id,
                 title: editTitle.isEmpty ? nil : editTitle,
@@ -308,26 +290,14 @@ struct ListingDetailView: View {
                 location: editLocation.isEmpty ? nil : editLocation
             )
             
-            // Success - close sheet
             showEditSheet = false
-            
         } catch {
             updateError = "Failed to update: \(error.localizedDescription)"
         }
         
         isUpdating = false
     }
-    // ============================================================
     
-    // ============================================================
-    // DELETE POST - UI TEAM: Handles soft delete logic
-    // BACKEND NOTE:
-    // - Changes post status to "hidden" (soft delete)
-    // - Post stays in database but won't appear in searches
-    // - Uses "hidden" status to match database constraint
-    // - User is returned to previous screen after deletion
-    // - Only post owner can delete (checked by auth)
-    // ============================================================
     @MainActor
     private func performDelete() async {
         guard !isDeleting else { return }
@@ -335,23 +305,14 @@ struct ListingDetailView: View {
         updateError = nil
         
         do {
-            // Create ListingsViewModel with auth
             let listingsVM = ListingsViewModel(authVM: authVM)
-            
-            // Soft delete the post
             try await listingsVM.deleteListing(postId: listing.id)
-            
-            // Success - close detail view and return to feed
             dismiss()
-            
         } catch {
             updateError = "Failed to delete: \(error.localizedDescription)"
             isDeleting = false
         }
     }
-    // ============================================================
-    
-    // MARK: - Helper Functions
     
     private func timeAgoString(from date: Date) -> String {
         let formatter = RelativeDateTimeFormatter()
@@ -389,5 +350,6 @@ struct ListingDetailView: View {
             )
         )
         .environmentObject(AuthViewModel())
+        .environmentObject(ProfileViewModel())
     }
 }

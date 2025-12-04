@@ -6,7 +6,8 @@
 import SwiftUI
 
 struct ChatListView: View {
-    @EnvironmentObject var chatVM: ChatViewModel
+    @EnvironmentObject var chat: ChatViewModel
+    @EnvironmentObject var profileVM: ProfileViewModel
     @State private var selectedThread: ThreadWithDetails?
     @State private var showNewConversation = false
     @StateObject private var searchVM = SearchViewModel()
@@ -14,8 +15,7 @@ struct ChatListView: View {
     var body: some View {
         NavigationView {
             VStack {
-                if !chatVM.isAuthenticated {
-                    // User not logged in
+                if !(chat.isAuthenticated) {
                     VStack(spacing: 20) {
                         Image(systemName: "person.crop.circle.badge.xmark")
                             .font(.system(size: 60))
@@ -30,10 +30,9 @@ struct ChatListView: View {
                             .padding(.horizontal)
                     }
                     .padding()
-                } else if chatVM.isLoadingThreads {
+                } else if chat.isLoadingThreads {
                     ProgressView("Loading conversations...")
-                } else if chatVM.threads.isEmpty {
-                    // No threads yet
+                } else if chat.threads.isEmpty {
                     VStack(spacing: 20) {
                         Image(systemName: "bubble.left.and.bubble.right")
                             .font(.system(size: 60))
@@ -48,18 +47,27 @@ struct ChatListView: View {
                     }
                     .padding()
                 } else {
-                    // Thread list
                     List {
-                        ForEach(chatVM.threads) { thread in
-                            NavigationLink(destination: ChatDetailView(thread: thread, chatVM: chatVM)) {
-                                ThreadRow(thread: thread)
+                        ForEach(chat.threads) { thread in
+                            NavigationLink(
+                                destination: ChatDetailView(thread: thread, observedChatVM: chat)
+                                    .environmentObject(profileVM)
+                            ) {
+                                ThreadRow(
+                                    otherPersonId: thread.otherPersonId,
+                                    otherPersonName: thread.otherPersonName,
+                                    postTitle: thread.postTitle,
+                                    lastMessagePreview: thread.lastMessagePreview,
+                                    avatarUpdatedAt: thread.otherPersonAvatarUpdatedAt,
+                                    otherPersonAvatarPath: thread.otherPersonAvatarPath
+                                )
                             }
                         }
                     }
                     .listStyle(.plain)
                 }
                 
-                if let error = chatVM.errorMessage {
+                if let error = chat.errorMessage {
                     Text(error)
                         .font(.caption)
                         .foregroundColor(.red)
@@ -69,79 +77,151 @@ struct ChatListView: View {
             .navigationTitle("💬 Chats")
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
-                    if chatVM.isAuthenticated {
-                        Button(action: {
+                    if chat.isAuthenticated {
+                        Button {
                             showNewConversation = true
-                        }) {
+                        } label: {
                             Image(systemName: "square.and.pencil")
                         }
                     }
                 }
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    if chatVM.isAuthenticated {
-                        Button(action: {
-                            Task {
-                                await chatVM.loadThreads()
-                            }
-                        }) {
+                    if chat.isAuthenticated {
+                        Button {
+                            Task { await chat.loadThreads() }
+                        } label: {
                             Image(systemName: "arrow.clockwise")
                         }
+                        .accessibilityLabel("Refresh conversations")
                     }
                 }
             }
             .sheet(isPresented: $showNewConversation) {
-                NewConversationSheet(chatVM: chatVM, searchVM: searchVM)
+                NewConversationSheet(chatVM: chat, searchVM: searchVM)
+                    .environmentObject(profileVM)
             }
             .onAppear {
-                chatVM.startThreadPolling()
+                Task { await chat.loadThreads() }
             }
             .onDisappear {
-                chatVM.stopPolling()
+                chat.stopPolling()
             }
         }
     }
 }
 
 struct ThreadRow: View {
-    let thread: ThreadWithDetails
+    let otherPersonId: UUID
+    let otherPersonName: String
+    let postTitle: String
+    let lastMessagePreview: String?
+    let avatarUpdatedAt: Date?
+    let otherPersonAvatarPath: String?
+    
+    private var reloadToken: Int {
+        if let ts = avatarUpdatedAt {
+            return Int(ts.timeIntervalSince1970)
+        } else {
+            return 0
+        }
+    }
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text(thread.otherPersonName)
-                .font(.headline)
+        HStack(spacing: 12) {
+            if let path = otherPersonAvatarPath, !path.isEmpty {
+                // We have a storage path, let the view sign it directly
+                UserAvatarView(
+                    userIdString: path,
+                    size: 44,
+                    reloadToken: reloadToken
+                )
+            } else {
+                // Fallback to fetching by user UUID
+                UserAvatarView(
+                    userIdString: otherPersonId.uuidString,
+                    size: 44,
+                    reloadToken: reloadToken
+                )
+            }
             
-            Text(thread.postTitle)
-                .font(.subheadline)
-                .foregroundColor(.gray)
-                .lineLimit(1)
-            
-            if let lastMessage = thread.lastMessagePreview {
-                Text(lastMessage)
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-                    .lineLimit(2)
+            VStack(alignment: .leading, spacing: 6) {
+                Text(otherPersonName)
+                    .font(.headline)
+                
+                Text(postTitle)
+                    .font(.subheadline)
+                    .foregroundColor(.gray)
+                    .lineLimit(1)
+                
+                if let last = lastMessagePreview {
+                    Text(last)
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                        .lineLimit(2)
+                }
             }
         }
-        .padding(.vertical, 4)
+        .padding(.vertical, 6)
     }
 }
 
 struct ChatDetailView: View {
     let thread: ThreadWithDetails
-    @ObservedObject var chatVM: ChatViewModel
+    @ObservedObject var observedChatVM: ChatViewModel
+    @EnvironmentObject var profileVM: ProfileViewModel
     @State private var messageText = ""
     @State private var scrollProxy: ScrollViewProxy?
     
     var body: some View {
+        content
+            .navigationTitle(thread.otherPersonName)
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .principal) {
+                    HStack(spacing: 8) {
+                        if let path = thread.otherPersonAvatarPath, !path.isEmpty {
+                            UserAvatarView(
+                                userIdString: path,
+                                size: 28,
+                                reloadToken: Int(thread.otherPersonAvatarUpdatedAt?.timeIntervalSince1970 ?? 0)
+                            )
+                        } else {
+                            UserAvatarView(
+                                userIdString: thread.otherPersonId.uuidString,
+                                size: 28,
+                                reloadToken: Int(thread.otherPersonAvatarUpdatedAt?.timeIntervalSince1970 ?? 0)
+                            )
+                        }
+                        Text(thread.otherPersonName)
+                            .font(.headline)
+                    }
+                }
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button {
+                        Task { await observedChatVM.refreshCurrentThread() }
+                    } label: {
+                        Image(systemName: "arrow.clockwise")
+                    }
+                    .accessibilityLabel("Refresh messages")
+                }
+            }
+            .onAppear {
+                Task { await observedChatVM.loadMessages(for: thread) }
+            }
+            .onDisappear {
+                observedChatVM.stopPolling()
+            }
+    }
+    
+    private var content: some View {
         VStack(spacing: 0) {
-            // Messages list
             ScrollViewReader { proxy in
                 ScrollView {
                     LazyVStack(spacing: 12) {
-                        ForEach(chatVM.currentThreadMessages) { message in
+                        ForEach(observedChatVM.currentThreadMessages) { message in
                             MessageBubble(
                                 message: message,
-                                isFromCurrentUser: chatVM.isMessageFromCurrentUser(message)
+                                isFromCurrentUser: observedChatVM.isMessageFromCurrentUser(message)
                             )
                             .id(message.id)
                         }
@@ -152,19 +232,18 @@ struct ChatDetailView: View {
                     scrollProxy = proxy
                     scrollToBottom()
                 }
-                .onChange(of: chatVM.currentThreadMessages.count) { oldValue, newValue in
+                .onChange(of: observedChatVM.currentThreadMessages.count) { _, _ in
                     scrollToBottom()
                 }
             }
             
-            // Message input
             HStack(spacing: 12) {
                 TextField("Type a message...", text: $messageText)
                     .textFieldStyle(.roundedBorder)
-                    .disabled(chatVM.isSendingMessage)
+                    .disabled(observedChatVM.isSendingMessage)
                 
                 Button(action: sendMessage) {
-                    if chatVM.isSendingMessage {
+                    if observedChatVM.isSendingMessage {
                         ProgressView()
                             .frame(width: 24, height: 24)
                     } else {
@@ -175,42 +254,19 @@ struct ChatDetailView: View {
                             .cornerRadius(20)
                     }
                 }
-                .disabled(messageText.isEmpty || chatVM.isSendingMessage)
+                .disabled(messageText.isEmpty || observedChatVM.isSendingMessage)
             }
             .padding()
             .background(Color(.systemGray6))
-        }
-        .navigationTitle(thread.otherPersonName)
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            ToolbarItem(placement: .navigationBarTrailing) {
-                Button(action: {
-                    Task {
-                        await chatVM.refreshCurrentThread()
-                    }
-                }) {
-                    Image(systemName: "arrow.clockwise")
-                }
-            }
-        }
-        .onAppear {
-            Task {
-                await chatVM.loadMessages(for: thread)
-            }
-        }
-        .onDisappear {
-            chatVM.stopPolling()
         }
     }
     
     private func sendMessage() {
         let text = messageText.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !text.isEmpty else { return }
-        
         messageText = ""
-        
         Task {
-            await chatVM.sendMessage(
+            await observedChatVM.sendMessage(
                 text: text,
                 to: thread.otherPersonId,
                 postId: thread.postId
@@ -219,7 +275,7 @@ struct ChatDetailView: View {
     }
     
     private func scrollToBottom() {
-        guard let lastMessage = chatVM.currentThreadMessages.last else { return }
+        guard let lastMessage = observedChatVM.currentThreadMessages.last else { return }
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
             withAnimation {
                 scrollProxy?.scrollTo(lastMessage.id, anchor: .bottom)
@@ -237,25 +293,21 @@ struct MessageBubble: View {
             if isFromCurrentUser {
                 Spacer()
             }
-            
             VStack(alignment: isFromCurrentUser ? .trailing : .leading, spacing: 4) {
                 if !isFromCurrentUser {
                     Text(message.senderName)
                         .font(.caption)
                         .foregroundColor(.gray)
                 }
-                
                 Text(message.message)
                     .padding(12)
                     .background(isFromCurrentUser ? Color.blue : Color(.systemGray5))
                     .foregroundColor(isFromCurrentUser ? .white : .primary)
                     .cornerRadius(16)
-                
                 Text(formatTime(message.createdAt))
                     .font(.caption2)
                     .foregroundColor(.gray)
             }
-            
             if !isFromCurrentUser {
                 Spacer()
             }
@@ -269,10 +321,10 @@ struct MessageBubble: View {
     }
 }
 
-// MARK: - New Conversation Sheet
 struct NewConversationSheet: View {
     @ObservedObject var chatVM: ChatViewModel
     @ObservedObject var searchVM: SearchViewModel
+    @EnvironmentObject var profileVM: ProfileViewModel
     @Environment(\.dismiss) private var dismiss
     @State private var selectedPost: Post?
     
@@ -297,22 +349,27 @@ struct NewConversationSheet: View {
                     .padding()
                 } else {
                     List(searchVM.searchResults) { post in
-                        Button(action: {
+                        Button {
                             selectedPost = post
                             startConversation(about: post)
-                        }) {
-                            VStack(alignment: .leading, spacing: 8) {
-                                Text(post.title)
-                                    .font(.headline)
-                                    .foregroundColor(.primary)
-                                
-                                Text("$\(String(format: "%.0f", post.price))")
-                                    .font(.subheadline)
-                                    .foregroundColor(.blue)
-                                
-                                Text("Seller: \(post.sellerName ?? "Unknown")")
-                                    .font(.caption)
-                                    .foregroundColor(.gray)
+                        } label: {
+                            HStack(spacing: 12) {
+                                UserAvatarView(
+                                    userIdString: post.userId.uuidString,
+                                    size: 28,
+                                    reloadToken: chatVM.chatAvatarReloadToken // list of posts can keep using chat token
+                                )
+                                VStack(alignment: .leading, spacing: 6) {
+                                    Text(post.title)
+                                        .font(.headline)
+                                        .foregroundColor(.primary)
+                                    Text("$\(String(format: "%.0f", post.price))")
+                                        .font(.subheadline)
+                                        .foregroundColor(.blue)
+                                    Text("Seller: \(post.sellerName ?? "Unknown")")
+                                        .font(.caption)
+                                        .foregroundColor(.gray)
+                                }
                             }
                             .padding(.vertical, 4)
                         }
@@ -325,9 +382,7 @@ struct NewConversationSheet: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Cancel") {
-                        dismiss()
-                    }
+                    Button("Cancel") { dismiss() }
                 }
             }
         }
@@ -335,9 +390,7 @@ struct NewConversationSheet: View {
     
     private func startConversation(about post: Post) {
         Task {
-            // Create thread with the current test user as buyer and post owner as seller
             await chatVM.startConversation(post: post)
-            // Close the sheet
             dismiss()
         }
     }
@@ -345,4 +398,7 @@ struct NewConversationSheet: View {
 
 #Preview {
     ChatListView()
+        .environmentObject(ProfileViewModel())
+        .environmentObject(ChatViewModel())
 }
+

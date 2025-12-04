@@ -10,8 +10,8 @@ import SwiftUI
 struct ProfileView: View {
     private let headerColor = Color(red: 9/255, green: 27/255, blue: 61/255)
 
-    // CORRECT: shared from RootView, not recreated locally
     @EnvironmentObject var profileVM: ProfileViewModel
+    @EnvironmentObject var authVM: AuthViewModel
     @StateObject private var searchVM = SearchViewModel()
 
     enum ProfileTab: String, CaseIterable, Identifiable {
@@ -57,9 +57,15 @@ struct ProfileView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button(action: {
-                        print("Settings tapped")
-                    }) {
+                    Menu {
+                        Button(role: .destructive) {
+                            Task {
+                                await authVM.signOut()
+                            }
+                        } label: {
+                            Label("Log Out", systemImage: "rectangle.portrait.and.arrow.right")
+                        }
+                    } label: {
                         Image(systemName: "gearshape")
                             .font(.system(size: 20, weight: .regular))
                     }
@@ -82,6 +88,7 @@ struct ProfileView: View {
                 .fill(headerColor)
             
             HStack(alignment: .center, spacing: 16) {
+                // 1) Local preview if user just picked an image in this session
                 if let img = profileVM.profileImage {
                     Image(uiImage: img)
                         .resizable()
@@ -89,17 +96,38 @@ struct ProfileView: View {
                         .frame(width: 70, height: 70)
                         .clipShape(Circle())
                         .overlay(Circle().stroke(Color.white, lineWidth: 2))
-                } else {
-                    ZStack {
-                        Circle().fill(Color.gray.opacity(0.3))
-                        Image(systemName: "person.fill")
-                            .resizable()
-                            .scaledToFit()
-                            .foregroundColor(.gray)
-                            .padding(15)
+                }
+                // 2) Signed URL from storage (preferred for persisted avatars)
+                else if let url = profileVM.avatarURL {
+                    AsyncImage(url: url) { phase in
+                        switch phase {
+                        case .empty:
+                            placeholderAvatar
+                        case .success(let image):
+                            image
+                                .resizable()
+                                .scaledToFill()
+                        case .failure:
+                            placeholderAvatar
+                        @unknown default:
+                            placeholderAvatar
+                        }
                     }
                     .frame(width: 70, height: 70)
+                    .clipShape(Circle())
                     .overlay(Circle().stroke(Color.white, lineWidth: 2))
+                }
+                // 3) Per-user loader (will refresh when reloadToken changes)
+                else if let id = profileVM.user?.id {
+                    UserAvatarView(userIdString: id, size: 70, reloadToken: profileVM.avatarReloadToken)
+                        .overlay(Circle().stroke(Color.white, lineWidth: 2))
+                }
+                // 4) Final fallback
+                else {
+                    placeholderAvatar
+                        .frame(width: 70, height: 70)
+                        .clipShape(Circle())
+                        .overlay(Circle().stroke(Color.white, lineWidth: 2))
                 }
                 
                 VStack(alignment: .leading, spacing: 6) {
@@ -154,6 +182,17 @@ struct ProfileView: View {
             .padding(16)
         }
         .frame(maxWidth: .infinity)
+    }
+    
+    private var placeholderAvatar: some View {
+        ZStack {
+            Circle().fill(Color.gray.opacity(0.3))
+            Image(systemName: "person.fill")
+                .resizable()
+                .scaledToFit()
+                .foregroundColor(.gray)
+                .padding(15)
+        }
     }
 
     // MARK: - Stats
@@ -249,4 +288,5 @@ struct ProfileView: View {
 #Preview {
     ProfileView()
         .environmentObject(ProfileViewModel())
+        .environmentObject(AuthViewModel())
 }

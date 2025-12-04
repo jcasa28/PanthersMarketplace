@@ -16,60 +16,68 @@ class ChatViewModel: ObservableObject {
     @Published var isSendingMessage = false
     @Published var errorMessage: String?
     
-    // MARK: - Authentication (like posts use)
+    // MARK: - Authentication
     private var authVM: AuthViewModel?
+    private var currentUserId: UUID? { authVM?.userId }
+    var isAuthenticated: Bool { authVM?.isLoggedIn ?? false }
     
     // MARK: - Current Thread
     @Published var currentThread: ThreadWithDetails?
     
-    // MARK: - Real-time polling (simplified real-time updates)
+    // MARK: - Avatar reload for chat lists
+    @Published var chatAvatarReloadToken: Int = 0
+    
+    // MARK: - Polling (optional)
     private var messagePollingTimer: Timer?
     private var threadPollingTimer: Timer?
-    private let pollingInterval: TimeInterval = 3.0 // Poll every 3 seconds
+    private let pollingInterval: TimeInterval = 3.0
     
-    // MARK: - Initialization
+    // MARK: - Init
     init(authVM: AuthViewModel? = nil) {
         self.authVM = authVM
         print("💬 ChatViewModel initialized")
     }
     
-    // MARK: - Computed Properties
-    
-    /// Current authenticated user ID (like posts use authVM.userId)
-    private var currentUserId: UUID? {
-        authVM?.userId
-    }
-    
-    /// Check if user is authenticated
-    var isAuthenticated: Bool {
-        authVM?.isLoggedIn ?? false
-    }
-    
-    // MARK: - Public Methods
-    
-    /// Load all threads for the current authenticated user
+    // MARK: - Threads
     func loadThreads() async {
-        guard let userId = currentUserId else {
-            errorMessage = "Please log in to view your conversations."
-            print("⚠️ Cannot load threads: User not authenticated")
+        guard isAuthenticated, let userId = currentUserId else {
+            errorMessage = "Please log in to view chats."
+            threads = []
             return
         }
-        
+        if isLoadingThreads { return }
         isLoadingThreads = true
         errorMessage = nil
         
         do {
-            threads = try await SupabaseService.shared.fetchThreadsForUser(userId: userId)
+            let fetched = try await SupabaseService.shared.fetchThreadsForUser(userId: userId)
+            threads = fetched
+            // Bump token so avatars in list refresh
+            chatAvatarReloadToken &+= 1
             print("✅ Loaded \(threads.count) threads for user \(userId)")
         } catch {
-            errorMessage = "Failed to load conversations: \(error.localizedDescription)"
+            errorMessage = "Failed to load threads: \(error.localizedDescription)"
             print("❌ Error loading threads: \(error)")
+            threads = []
         }
         
         isLoadingThreads = false
     }
     
-    /// Load messages for a specific thread
+    func refreshThreads() async {
+        await loadThreads()
+    }
+    
+    func refreshCurrentThread() async {
+        guard let thread = currentThread else { return }
+        await loadMessages(for: thread)
+    }
+    
+    func isMessageFromCurrentUser(_ message: Message) -> Bool {
+        message.senderId == currentUserId
+    }
+    
+    // MARK: - Messages
     func loadMessages(for thread: ThreadWithDetails) async {
         currentThread = thread
         isLoadingMessages = true
@@ -79,26 +87,25 @@ class ChatViewModel: ObservableObject {
             let messages = try await SupabaseService.shared.fetchMessages(threadId: thread.id)
             currentThreadMessages = messages
             print("✅ Loaded \(messages.count) messages for thread \(thread.id)")
-            
-            // Start polling for new messages
-            startMessagePolling()
         } catch {
             errorMessage = "Failed to load messages: \(error.localizedDescription)"
             print("❌ Error loading messages: \(error)")
+            currentThreadMessages = []
         }
         
         isLoadingMessages = false
     }
     
-    /// Send a new message
     func sendMessage(text: String, to receiverId: UUID, postId: UUID) async {
         guard let senderId = currentUserId else {
             errorMessage = "Please log in to send messages."
             print("⚠️ Cannot send message: User not authenticated")
             return
         }
-        
-        guard !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+        guard !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return }
+        guard let thread = currentThread else {
+            errorMessage = "No active thread."
+            print("⚠️ Cannot send message: currentThread is nil")
             return
         }
         
@@ -110,13 +117,11 @@ class ChatViewModel: ObservableObject {
                 senderId: senderId,
                 receiverId: receiverId,
                 postId: postId,
+                threadId: thread.id,
                 messageText: text
             )
-            
-            // Add the new message to the current thread
             currentThreadMessages.append(newMessage)
-            print("✅ Message sent successfully")
-            
+            print("✅ Message sent and appended locally")
         } catch {
             errorMessage = "Failed to send message: \(error.localizedDescription)"
             print("❌ Error sending message: \(error)")
@@ -125,141 +130,47 @@ class ChatViewModel: ObservableObject {
         isSendingMessage = false
     }
     
-    /// Create a new thread for a post
-    func createThread(postId: UUID, sellerId: UUID) async -> UUID? {
+    // MARK: - Start Conversation
+    func createThread(postId: UUID, buyerId: UUID, sellerId: UUID) async throws -> UUID {
+        try await SupabaseService.shared.createThread(postId: postId, buyerId: buyerId, sellerId: sellerId)
+    }
+    
+    func startConversation(post: Post) async {
         guard let buyerId = currentUserId else {
             errorMessage = "Please log in to start a conversation."
             print("⚠️ Cannot create thread: User not authenticated")
-            return nil
-        }
-        
-        do {
-            let threadId = try await SupabaseService.shared.createThread(
-                postId: postId,
-                buyerId: buyerId,
-                sellerId: sellerId
-            )
-            
-            print("✅ Thread created: \(threadId)")
-            
-            // Reload threads to show the new conversation
-            await loadThreads()
-            
-            return threadId
-            
-        } catch {
-            errorMessage = "Failed to create conversation: \(error.localizedDescription)"
-            print("❌ Error creating thread: \(error)")
-            return nil
-        }
-    }
-    
-    /// Start a conversation about a post
-    func startConversation(post: Post) async {
-        guard let threadId = await createThread(postId: post.id, sellerId: post.userId) else {
             return
         }
         
-        // Find the newly created thread
-        if let thread = threads.first(where: { $0.id == threadId }) {
-            await loadMessages(for: thread)
-        }
-    }
-    
-    /// Refresh the current thread (manual refresh)
-    func refreshCurrentThread() async {
-        guard let thread = currentThread else { return }
-        await loadMessages(for: thread)
-    }
-    
-    /// Check if message is from current authenticated user
-    func isMessageFromCurrentUser(_ message: Message) -> Bool {
-        return message.senderId == currentUserId
-    }
-    
-    // MARK: - Real-time Updates (Simplified Polling)
-    
-    /// Start polling for new messages
-    private func startMessagePolling() {
-        stopMessagePolling()
-        
-        messagePollingTimer = Timer.scheduledTimer(withTimeInterval: pollingInterval, repeats: true) { [weak self] _ in
-            Task { @MainActor in
-                await self?.refreshMessages()
+        do {
+            let threadId = try await createThread(postId: post.id, buyerId: buyerId, sellerId: post.userId)
+            await loadThreads()
+            if let thread = threads.first(where: { $0.id == threadId }) {
+                await loadMessages(for: thread)
+            } else {
+                let thread = ThreadWithDetails(
+                    id: threadId,
+                    postId: post.id,
+                    postTitle: post.title,
+                    buyerId: buyerId,
+                    sellerId: post.userId,
+                    otherPersonName: post.sellerName ?? "Seller",
+                    otherPersonId: post.userId,
+                    createdAt: Date()
+                )
+                await loadMessages(for: thread)
             }
+        } catch {
+            errorMessage = "Failed to create conversation: \(error.localizedDescription)"
+            print("❌ Error creating thread: \(error)")
         }
-        
-        print("📡 Started message polling")
     }
     
-    /// Stop polling for messages
-    private func stopMessagePolling() {
+    // MARK: - Polling controls (optional)
+    func stopPolling() {
         messagePollingTimer?.invalidate()
         messagePollingTimer = nil
-    }
-    
-    /// Start polling for thread updates
-    func startThreadPolling() {
-        stopThreadPolling()
-        
-        threadPollingTimer = Timer.scheduledTimer(withTimeInterval: pollingInterval * 2, repeats: true) { [weak self] _ in
-            Task { @MainActor in
-                await self?.refreshThreads()
-            }
-        }
-        
-        print("📡 Started thread polling")
-    }
-    
-    /// Stop polling for threads
-    private func stopThreadPolling() {
         threadPollingTimer?.invalidate()
         threadPollingTimer = nil
-    }
-    
-    /// Stop all polling
-    func stopPolling() {
-        stopMessagePolling()
-        stopThreadPolling()
-        print("📡 Stopped all polling")
-    }
-    
-    /// Refresh messages silently (for polling)
-    private func refreshMessages() async {
-        guard let thread = currentThread else { return }
-        
-        do {
-            let messages = try await SupabaseService.shared.fetchMessages(threadId: thread.id)
-            
-            // Only update if we got new messages
-            if messages.count > currentThreadMessages.count {
-                currentThreadMessages = messages
-                print("🔄 Refreshed messages: \(messages.count) total")
-            }
-        } catch {
-            print("⚠️ Silent refresh failed: \(error)")
-        }
-    }
-    
-    /// Refresh threads silently (for polling)
-    private func refreshThreads() async {
-        guard let userId = currentUserId else { return }
-        
-        do {
-            let updatedThreads = try await SupabaseService.shared.fetchThreadsForUser(userId: userId)
-            
-            // Only update if thread count changed
-            if updatedThreads.count != threads.count {
-                threads = updatedThreads
-                print("🔄 Refreshed threads: \(updatedThreads.count) total")
-            }
-        } catch {
-            print("⚠️ Silent thread refresh failed: \(error)")
-        }
-    }
-    
-    /// Get thread count for stats
-    func getThreadCount() -> Int {
-        return threads.count
     }
 }

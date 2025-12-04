@@ -9,6 +9,7 @@ import SwiftUI
 
 struct FeedView: View {
     @EnvironmentObject var authVM: AuthViewModel  // Get auth from environment
+    @EnvironmentObject var profileVM: ProfileViewModel
     @StateObject private var searchVM = SearchViewModel()
     @State private var showUploadPost = false
     @State private var selectedCategory: ProductCategory?
@@ -46,10 +47,23 @@ struct FeedView: View {
                                     .foregroundColor(Color(red:146/255, green:175/255, blue:201/255))
                             }
                             Spacer()
-                            NavigationLink(destination: ProfileView()) {
-                                Image(systemName: "person")
-                                    .foregroundColor(.white)
-                                    .font(.system(size: 25))
+                            NavigationLink(destination: ProfileView()
+                                .environmentObject(profileVM)
+                                .environmentObject(authVM)
+                            ) {
+                                // If logged in, show avatar; else generic icon
+                                if let userId = authVM.userId {
+                                    UserAvatarView(
+                                        userIdString: userId.uuidString,
+                                        size: 28,
+                                        reloadToken: profileVM.avatarReloadToken
+                                    )
+                                    .overlay(Circle().stroke(Color.white.opacity(0.2), lineWidth: 1))
+                                } else {
+                                    Image(systemName: "person")
+                                        .foregroundColor(.white)
+                                        .font(.system(size: 25))
+                                }
                             }
                         }
                         .padding(.horizontal)
@@ -71,21 +85,6 @@ struct FeedView: View {
                                 }
                             }
                             
-                            // ============================================================
-                            // SORT BUTTON - UI TEAM: This is a Menu dropdown approach
-                            // ============================================================
-                            // WHAT THIS DOES:
-                            // - Shows an arrow.up.arrow.down icon in the search bar
-                            // - When tapped, opens a dropdown menu with all sort options
-                            // - Checkmark appears next to currently selected option
-                            //
-                            // HOW TO CUSTOMIZE:
-                            // 1. Change icon: Replace "arrow.up.arrow.down" with any SF Symbol
-                            //    Examples: "line.3.horizontal.decrease.circle", "arrow.up.arrow.down.circle"
-                            // 2. Change color: Modify .foregroundColor(.gray) to your brand color
-                            // 3. Move location: Cut this entire Menu block and paste elsewhere
-                            // 4. Change to button style: See "UI ALTERNATIVES" section below
-                            //
                             Menu {
                                 ForEach(SortOption.allCases, id: \.self) { option in
                                     Button(action: { searchVM.sortBy(option) }) {
@@ -101,7 +100,6 @@ struct FeedView: View {
                                 Image(systemName: "arrow.up.arrow.down")
                                     .foregroundColor(.gray)
                             }
-                            // ============================================================
                             
                             Button(action: { showingFilterSheet = true }) {
                                 Image(systemName: "slider.horizontal.3")
@@ -121,7 +119,6 @@ struct FeedView: View {
                         VStack(alignment: .leading, spacing: 20) {
 
                             if searchVM.searchQuery.isEmpty && selectedCategory == nil {
-                                // Show categories only when not searching
                                 Text("Categories")
                                     .font(.title2)
                                     .bold()
@@ -163,7 +160,6 @@ struct FeedView: View {
                                 .padding(.horizontal)
                             }
 
-                            // Active filters display
                             if searchVM.getCurrentFilters().hasActiveFilters() {
                                 let filters = searchVM.getCurrentFilters()
                                 ScrollView(.horizontal, showsIndicators: false) {
@@ -181,9 +177,6 @@ struct FeedView: View {
                                             }
                                         }
                                         
-                                        // FIXED (Issue 3): Display price filter tag for single-bound or range filtering
-                                        // Previously only showed tag when BOTH min AND max were set
-                                        // Now shows "Min: $X", "Max: $X", or "$X-$Y" based on what's active
                                         if filters.minPrice != nil || filters.maxPrice != nil {
                                             FilterTag(text: priceFilterText(filters: filters)) {
                                                 self.minPrice = ""
@@ -209,7 +202,6 @@ struct FeedView: View {
                                 }
                             }
 
-                            // Search results or recent listings
                             Text(searchVM.searchQuery.isEmpty ? "Recent Listings" : "Search Results")
                                 .font(.title2)
                                 .bold()
@@ -223,40 +215,17 @@ struct FeedView: View {
                                 LazyVGrid(columns: listingColumns, spacing: 20) {
                                     ForEach(searchVM.searchResults) { post in
                                         NavigationLink(destination: ListingDetailView(listing: post)
-                                            // ============================================================
-                                            // UI TEAM: Pass auth and search ViewModels for backend functionality
-                                            // ============================================================
                                             .environmentObject(authVM)
+                                            .environmentObject(profileVM)
                                             .environmentObject(searchVM)) {
-                                            // ============================================================
                                             ListingCard(listing: post)
                                         }
                                         .buttonStyle(.plain)
                                         .onAppear {
-                                            // Trigger load more when user scrolls near the end
                                             searchVM.loadMoreIfNeeded(currentPost: post)
                                         }
-                                        // ============================================================
-                                        // BACKEND: Refresh data when returning from detail view
-                                        // WHY: If user edits a post in ListingDetailView, the changes
-                                        // are saved to database but not reflected in this cached list.
-                                        // This re-fetches from database to show latest data.
-                                        //
-                                        // FRONTEND TEAM NOTES:
-                                        // - You can add a loading indicator during refresh
-                                        // - You can replace this with pull-to-refresh gesture
-                                        // - You can debounce if user navigates quickly
-                                        // - Current implementation: silent background refresh
-                                        // ============================================================
-                                        // ============================================================
-                                        // BACKEND NOTE: Auto-refresh removed due to excessive calls
-                                        // The refresh was triggering when cards scrolled off-screen
-                                        // FRONTEND TEAM: Add pull-to-refresh gesture if needed
-                                        // Or implement smart refresh only when returning from edit
-                                        // ============================================================
                                     }
                                     
-                                    // Loading indicator for pagination
                                     if searchVM.isLoadingMore {
                                         HStack {
                                             Spacer()
@@ -286,7 +255,10 @@ struct FeedView: View {
                         Text("Browse")
                     }
                     Spacer()
-                    NavigationLink(destination: ProfileView(initialSelectedTab: .savedItems)) {
+                    NavigationLink(destination: ProfileView(initialSelectedTab: .savedItems)
+                        .environmentObject(profileVM)
+                        .environmentObject(authVM)
+                    ) {
                         VStack {
                             Image(systemName: "bookmark")
                             Text("Saved")
@@ -308,14 +280,19 @@ struct FeedView: View {
                     }
                     .offset(x : 9)
                     Spacer()
-                    NavigationLink(destination: ChatListView()) {
+                    NavigationLink(destination: ChatListView()
+                        .environmentObject(profileVM)
+                    ) {
                         VStack {
                             Image(systemName: "ellipsis.message")
                             Text("Messages")
                         }
                     }
                     Spacer()
-                    NavigationLink(destination: ProfileView()) {
+                    NavigationLink(destination: ProfileView()
+                        .environmentObject(profileVM)
+                        .environmentObject(authVM)
+                    ) {
                         VStack {
                             Image(systemName: "person")
                             Text("Profile")
@@ -336,6 +313,7 @@ struct FeedView: View {
             .sheet(isPresented: $showUploadPost) {
                 UploadPostView()
                     .environmentObject(authVM)
+                    .environmentObject(profileVM)
             }
             .sheet(isPresented: $showingFilterSheet) {
                 FilterSheetView(
@@ -346,31 +324,17 @@ struct FeedView: View {
                     onApply: { category, campus, min, max in
                         searchVM.filterByCategory(category)
                         searchVM.filterByCampus(campus)
-                        
-                        // FIXED (Issue 2): Allow single-bound price filtering (min-only or max-only)
-                        // Previously required BOTH min AND max to be set
-                        // Now converts empty strings to nil and applies available bounds independently
                         let minVal = min.isEmpty ? nil : Double(min)
                         let maxVal = max.isEmpty ? nil : Double(max)
                         searchVM.filterByPrice(min: minVal, max: maxVal)
-                        
-                        // FIXED (Issue 3): Synchronize UI state with actual applied filters
-                        // This ensures filter tags accurately reflect what's actually filtered
-                        // Prevents showing filter tags for filters that failed validation
                         let appliedFilters = searchVM.getCurrentFilters()
-                        
-                        // Update UI state to match what was actually applied
                         if appliedFilters.minPrice != nil || appliedFilters.maxPrice != nil {
-                            // Price filter was successfully applied - keep the UI values
                             self.minPrice = min
                             self.maxPrice = max
                         } else if !min.isEmpty || !max.isEmpty {
-                            // Price values were entered but filter wasn't applied (validation failed)
-                            // Clear the UI to show the filter wasn't applied
                             self.minPrice = ""
                             self.maxPrice = ""
                         }
-                        
                         showingFilterSheet = false
                     }
                 )
@@ -378,7 +342,6 @@ struct FeedView: View {
         }
     }
     
-    // Helper function to format price filter text
     private func priceFilterText(filters: SearchFilters) -> String {
         if let min = filters.minPrice, let max = filters.maxPrice {
             return "$\(String(format: "%.2f", min))-$\(String(format: "%.2f", max))"
@@ -392,7 +355,6 @@ struct FeedView: View {
     }
 }
 
-// MARK: - Filter Tag View
 struct FilterTag: View {
     let text: String
     let onRemove: () -> Void
@@ -413,7 +375,6 @@ struct FilterTag: View {
     }
 }
 
-// MARK: - Filter Sheet View
 struct FilterSheetView: View {
     @Binding var selectedCategory: ProductCategory?
     @Binding var selectedCampus: Campus?
@@ -477,4 +438,3 @@ struct FilterSheetView: View {
         .environmentObject(AuthViewModel())
         .environmentObject(ChatViewModel())
 }
-

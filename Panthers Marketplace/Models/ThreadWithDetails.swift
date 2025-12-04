@@ -15,7 +15,13 @@ struct ThreadWithDetails: Identifiable, Codable {
     let otherPersonId: UUID
     let createdAt: Date
     
-    // Optional: Last message preview (can be added later)
     var lastMessagePreview: String?
     var lastMessageTime: Date?
+    
+    // Per-user avatar timestamp for cache busting
+    var otherPersonAvatarUpdatedAt: Date?
+    
+    // New: Storage path to other person's avatar (e.g., "users/<uuid>/profile-xxx.jpg")
+    var otherPersonAvatarPath: String?
 }
+
