@@ -22,6 +22,7 @@ struct ListingDetailView: View {
     @State private var editLocation = ""
     @State private var isUpdating = false
     @State private var updateError: String?
+    
   
     @State private var showDeleteConfirmation = false
     @State private var isDeleting = false
@@ -316,7 +317,25 @@ struct ListingDetailView: View {
     private func saveChanges() async { /* your existing implementation */ }
     
     @MainActor
-    private func performDelete() async { /* your existing implementation */ }
+    private func performDelete() async {
+        guard !isDeleting else { return }
+        isDeleting = true
+        updateError = nil
+
+        do {
+            // Use ListingsViewModel to delete from Supabase
+            let listingsVM = ListingsViewModel(authVM: authVM)
+            try await listingsVM.deleteListing(postId: listing.id)
+
+            print("✅ Listing deleted in Supabase, dismissing detail view")
+            dismiss()   // go back to previous screen (Feed/Profile)
+        } catch {
+            print("❌ Failed to delete listing: \(error)")
+            updateError = "Failed to delete: \(error.localizedDescription)"
+            isDeleting = false
+        }
+    }
+
     
     private func timeAgoString(from date: Date) -> String {
         let formatter = RelativeDateTimeFormatter()
