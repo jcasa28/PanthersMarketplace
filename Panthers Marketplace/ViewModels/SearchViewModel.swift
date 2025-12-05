@@ -52,7 +52,7 @@ final class SearchViewModel: ObservableObject {
     }
     
     // MARK: - Debounced Search Setup
-    private func setupDebouncedSearch() {
+     func setupDebouncedSearch() {
         searchCancellable = $searchQuery
             .debounce(for: .milliseconds(300), scheduler: RunLoop.main)
             .removeDuplicates()

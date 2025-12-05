@@ -244,6 +244,8 @@ struct FeedView: View {
                                 .frame(height: 100)
                         }
                         .padding(.top)
+                    }.refreshable {
+                        await searchVM.setupDebouncedSearch()
                     }
                 }
 

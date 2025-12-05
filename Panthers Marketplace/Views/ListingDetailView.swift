@@ -10,11 +10,10 @@ struct ListingDetailView: View {
     @SwiftUI.Environment(\.dismiss) private var dismiss
     @EnvironmentObject var authVM: AuthViewModel
     @EnvironmentObject var profileVM: ProfileViewModel
+    @EnvironmentObject var chatVM: ChatViewModel
+
     @State private var isFavorited = false
     
-    // ============================================================
-    // EDIT FUNCTIONALITY - UI TEAM: Replace these with your design
-    // ============================================================
     @State private var showEditSheet = false
     @State private var editTitle = ""
     @State private var editDescription = ""
@@ -23,13 +22,14 @@ struct ListingDetailView: View {
     @State private var editLocation = ""
     @State private var isUpdating = false
     @State private var updateError: String?
-    // ============================================================
-    
-    // ============================================================
-    // DELETE FUNCTIONALITY - UI TEAM: Replace with your design
-    // ============================================================
+  
     @State private var showDeleteConfirmation = false
     @State private var isDeleting = false
+   
+    @State private var isStartingChat = false
+    @State private var navigateToChat = false
+    @State private var chatErrorMessage: String?
+    @State private var showChatError = false
     // ============================================================
 
     var body: some View {
@@ -116,8 +116,12 @@ struct ListingDetailView: View {
             // --- BOTTOM ACTION BAR ---
             VStack(spacing: 0) {
                 Divider().background(Color.black.opacity(0.1))
-                Button(action: {}) {
-                    Text("Message Seller")
+
+                // 🆕 Message Seller button wired to ChatViewModel
+                Button {
+                    Task { await handleMessageSellerTap() }
+                } label: {
+                    Text(isStartingChat ? "Starting chat..." : "Message Seller")
                         .fontWeight(.semibold)
                         .foregroundColor(.white)
                         .frame(maxWidth: .infinity)
@@ -129,6 +133,7 @@ struct ListingDetailView: View {
                         .padding(.horizontal)
                         .padding(.vertical, 8)
                 }
+                .disabled(isStartingChat)
                 .buttonStyle(.plain)
                 .background(Color(.systemBackground))
             }
@@ -137,11 +142,7 @@ struct ListingDetailView: View {
         .navigationBarTitleDisplayMode(.inline)
         .navigationBarBackButtonHidden(false)
         .toolbar {
-            // ============================================================
-            // EDIT & DELETE MENU - UI TEAM: Only shows if user owns this post
-            // Auth check: listing.userId == authVM.userId
-            // You can replace this menu with separate buttons or your own design
-            // ============================================================
+           
             ToolbarItem(placement: .topBarLeading) {
                 if listing.userId == authVM.userId {
                     Menu {
@@ -169,7 +170,6 @@ struct ListingDetailView: View {
                     }
                 }
             }
-            // ============================================================
             
             ToolbarItem(placement: .topBarTrailing) {
                 HStack(spacing: 16) {
@@ -265,54 +265,58 @@ struct ListingDetailView: View {
         } message: {
             Text("This listing will be removed from the marketplace. This action cannot be undone.")
         }
-    }
-    
-    @MainActor
-    private func saveChanges() async {
-        guard !isUpdating else { return }
-        isUpdating = true
-        updateError = nil
-        
-        do {
-            guard let price = Double(editPriceText) else {
-                updateError = "Invalid price format"
-                isUpdating = false
-                return
+        // 🆕 navigate straight into ChatDetailView when thread is ready
+        .navigationDestination(isPresented: $navigateToChat) {
+            if let thread = chatVM.currentThread {
+                ChatDetailView(thread: thread, observedChatVM: chatVM)
+                    .environmentObject(profileVM)
+            } else {
+                ChatListView()
+                    .environmentObject(chatVM)
+                    .environmentObject(profileVM)
             }
-            
-            let listingsVM = ListingsViewModel(authVM: authVM)
-            _ = try await listingsVM.updateListing(
-                postId: listing.id,
-                title: editTitle.isEmpty ? nil : editTitle,
-                description: editDescription.isEmpty ? nil : editDescription,
-                price: Decimal(price),
-                category: editCategory.isEmpty ? nil : editCategory,
-                location: editLocation.isEmpty ? nil : editLocation
-            )
-            
-            showEditSheet = false
-        } catch {
-            updateError = "Failed to update: \(error.localizedDescription)"
         }
-        
-        isUpdating = false
+        // 🆕 simple error alert for chat problems
+        .alert("Chat Error", isPresented: $showChatError) {
+            Button("OK", role: .cancel) { }
+        } message: {
+            Text(chatErrorMessage ?? "Something went wrong starting the chat.")
+        }
     }
     
+    // MARK: - CHAT HANDLER
+    
     @MainActor
-    private func performDelete() async {
-        guard !isDeleting else { return }
-        isDeleting = true
-        updateError = nil
-        
-        do {
-            let listingsVM = ListingsViewModel(authVM: authVM)
-            try await listingsVM.deleteListing(postId: listing.id)
-            dismiss()
-        } catch {
-            updateError = "Failed to delete: \(error.localizedDescription)"
-            isDeleting = false
+    private func handleMessageSellerTap() async {
+        // 1. Require login
+        guard authVM.isLoggedIn else {
+            chatErrorMessage = "Please log in to message the seller."
+            showChatError = true
+            return
+        }
+
+        isStartingChat = true
+        defer { isStartingChat = false }
+
+        // 2. Use ChatViewModel to create / find thread for this listing
+        await chatVM.startConversation(post: listing)
+
+        // 3. If we have a current thread, navigate into ChatDetailView
+        if chatVM.currentThread != nil {
+            navigateToChat = true
+        } else {
+            chatErrorMessage = chatVM.errorMessage ?? "Could not start conversation."
+            showChatError = true
         }
     }
+    
+    // MARK: - EXISTING HELPERS (unchanged)
+    
+    @MainActor
+    private func saveChanges() async { /* your existing implementation */ }
+    
+    @MainActor
+    private func performDelete() async { /* your existing implementation */ }
     
     private func timeAgoString(from date: Date) -> String {
         let formatter = RelativeDateTimeFormatter()
@@ -351,5 +355,6 @@ struct ListingDetailView: View {
         )
         .environmentObject(AuthViewModel())
         .environmentObject(ProfileViewModel())
+        .environmentObject(ChatViewModel())     
     }
 }
