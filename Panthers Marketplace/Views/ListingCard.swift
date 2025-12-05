@@ -11,6 +11,9 @@ import SwiftUI
 
 struct ListingCard: View {
     let listing: Post
+    
+    
+    
 
     // MARK: - Category → Image
     private var imageNameForCategory: String {
@@ -54,6 +57,12 @@ struct ListingCard: View {
                 
                 Text(listing.title)
                     .font(.system(size: 17))
+                Spacer()
+                HStack{
+                    
+                    Label(timeAgoString(from: listing.createdAt), systemImage: "clock")
+                }
+                
             }
             .offset(y: -30)
             .padding(.leading)
@@ -64,6 +73,11 @@ struct ListingCard: View {
         .shadow(radius: 6)
         .padding(.bottom)
     }
+}
+private func timeAgoString(from date: Date) -> String {
+    let formatter = RelativeDateTimeFormatter()
+    formatter.unitsStyle = .abbreviated
+    return formatter.localizedString(for: date, relativeTo: Date())
 }
 
 #Preview {

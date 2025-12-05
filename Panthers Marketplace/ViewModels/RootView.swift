@@ -16,7 +16,7 @@ struct RootView: View {
     var body: some View {
         Group {
             if authVM.isLoggedIn {
-                ContentView()
+                FeedView()
                     .environmentObject(authVM)
                     .environmentObject(profileVM)
                     .environmentObject(chatVM)
